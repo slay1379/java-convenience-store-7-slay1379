@@ -51,7 +51,11 @@ public class InputView {
 
     private String[] extractProductDetails(String product) {
         String content = product.substring(1, product.length() - 1);
-        return content.split("-");
+        String[] details = content.split("-");
+        if (details.length != 2 || details[0].isEmpty() || details[1].isEmpty()) {
+            throw new IllegalArgumentException(MessageConstants.ERROR + MessageConstants.PATTERN_EXCEPTION);
+        }
+        return details;
     }
 
     private void validateProductPattern(String input) {
