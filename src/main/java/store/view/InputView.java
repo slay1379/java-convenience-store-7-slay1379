@@ -64,11 +64,21 @@ public class InputView {
 
     private void validateProductName(String name) {
         if (name == null || name.isEmpty()) {
-            throw new IllegalArgumentException(MessageConstants.ERROR + MessageConstants.PRODUCT_NAME_EMPTY);
+            throw new IllegalArgumentException(MessageConstants.ERROR + MessageConstants.INPUT_PRODUCT_NAME_EMPTY_EXCEPTION);
         }
     }
 
-    private void validateProductQuantity(String quantity) {
-        try
+    private void validateProductQuantity(String quantityStr) {
+        int quantity;
+        try {
+            quantity = Integer.parseInt(quantityStr);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(
+                    MessageConstants.ERROR + MessageConstants.INPUT_PRODUCT_QUANTITY_NOT_NUMBER_EXCEPTION);
+        }
+        if (quantity <= 0) {
+            throw new IllegalArgumentException(
+                    MessageConstants.ERROR + MessageConstants.INPUT_PRODUCT_QUANTITY_BELOW_ZERO_EXCEPTION);
+        }
     }
 }
