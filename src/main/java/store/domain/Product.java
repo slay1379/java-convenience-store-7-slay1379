@@ -25,4 +25,8 @@ public class Product {
     public int getQuantity() {
         return this.quantity;
     }
+
+    public String getPromotion() {
+        return this.promotion;
+    }
 }
