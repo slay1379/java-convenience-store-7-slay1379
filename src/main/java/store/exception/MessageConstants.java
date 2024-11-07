@@ -7,5 +7,6 @@ public class MessageConstants {
     public static final String FILE_READ_EXCEPTION = "파일 읽기 오류";
     public static final String FILE_FORM_EXCEPTION = "잘못된 형식";
     public static final String INPUT_PRODUCT_NAME_EMPTY_EXCEPTION = "상품명은 공백일 수 없습니다.";
-    public static final String INPUT_PRODUCT_QUANTITY_NOT_NUMBER_EXCEPTION = "상품 수량은 숫자여야 합니다.";
+    public static final String INPUT_PRODUCT_QUANTITY_NOT_NUMBER_EXCEPTION = "수량은 숫자여야 합니다.";
+    public static final String INPUT_PRODUCT_QUANTITY_BELOW_ZERO_EXCEPTION = "수량은 0 보다 커야 합니다.";
 }
