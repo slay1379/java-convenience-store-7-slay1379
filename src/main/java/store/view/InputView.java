@@ -13,8 +13,16 @@ public class InputView {
     private static final String PRODUCT_QUANTITY_PATTERN = "^\\[([가-힣a-zA-Z]+)-(\\d+)\\]$";
 
     public String readProduct() {
-        System.out.println(INPUT_PRODUCT_NAME_QUANTITY_MESSAGE);
-        return Console.readLine();
+        while (true) {
+            System.out.println(INPUT_PRODUCT_NAME_QUANTITY_MESSAGE);
+            String input = Console.readLine();
+            try {
+                parseInputProduct(input);
+                return input;
+            } catch (IllegalArgumentException e) {
+                System.out.println(MessageConstants.ERROR + e.getMessage());
+            }
+        }
     }
 
     public String readMembershipDiscount() {
@@ -30,32 +38,37 @@ public class InputView {
     private void parseInputProduct(String input) {
         String[] products = input.split(",");
         for (String product : products) {
-            isValidProduct(product);
+            validateProduct(product);
         }
     }
 
-    private boolean isValidProduct(String product) {
+    private void validateProduct(String product) {
         validateProductPattern(product);
-        String substring = product.substring(1, product.length() - 1);
-        String[] splitSubstring = substring.split("-");
-        String name = splitSubstring[0];
-        int quantity = Integer.parseInt(splitSubstring[1]);
-        validateProductName(name);
-        validateProductQuantity(quantity);
+        String[] productDetails = extractProductDetails(product);
+        validateProductName(productDetails[0]);
+        validateProductQuantity(productDetails[1]);
+    }
+
+    private String[] extractProductDetails(String product) {
+        String content = product.substring(1, product.length() - 1);
+        return content.split("-");
     }
 
     private void validateProductPattern(String input) {
-        try {
-            Pattern pattern = Pattern.compile(PRODUCT_QUANTITY_PATTERN);
-            Matcher matcher = pattern.matcher(input);
-        } catch (Exception e) {
+        Pattern pattern = Pattern.compile(PRODUCT_QUANTITY_PATTERN);
+        Matcher matcher = pattern.matcher(input);
+        if (!matcher.matches()) {
             throw new IllegalArgumentException(MessageConstants.ERROR + MessageConstants.PATTERN_EXCEPTION);
         }
     }
 
     private void validateProductName(String name) {
-        try {
-
+        if (name == null || name.isEmpty()) {
+            throw new IllegalArgumentException(MessageConstants.ERROR + MessageConstants.PRODUCT_NAME_EMPTY);
         }
+    }
+
+    private void validateProductQuantity(String quantity) {
+        try
     }
 }
