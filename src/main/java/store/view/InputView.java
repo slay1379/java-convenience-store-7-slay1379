@@ -3,6 +3,7 @@ package store.view;
 import camp.nextstep.edu.missionutils.Console;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import store.exception.MessageConstants;
 
 public class InputView {
 
@@ -34,13 +35,17 @@ public class InputView {
     }
 
     private boolean isValidProduct(String product) {
+        validateProductPattern(product);
         isValidName(String name);
         isValidQuantity(String quantity);
     }
 
-    private boolean isValidProductPattern(String input) {
-        Pattern pattern = Pattern.compile(PRODUCT_QUANTITY_PATTERN);
-        Matcher matcher = pattern.matcher(input);
-        return matcher.matches();
+    private boolean validateProductPattern(String input) {
+        try {
+            Pattern pattern = Pattern.compile(PRODUCT_QUANTITY_PATTERN);
+            Matcher matcher = pattern.matcher(input);
+        } catch (Exception e) {
+            throw new IllegalArgumentException(MessageConstants.ERROR + MessageConstants.PATTERN_EXCEPTION);
+        }
     }
 }
