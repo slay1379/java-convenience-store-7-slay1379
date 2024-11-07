@@ -36,16 +36,26 @@ public class InputView {
 
     private boolean isValidProduct(String product) {
         validateProductPattern(product);
-        isValidName(String name);
-        isValidQuantity(String quantity);
+        String substring = product.substring(1, product.length() - 1);
+        String[] splitSubstring = substring.split("-");
+        String name = splitSubstring[0];
+        int quantity = Integer.parseInt(splitSubstring[1]);
+        validateProductName(name);
+        validateProductQuantity(quantity);
     }
 
-    private boolean validateProductPattern(String input) {
+    private void validateProductPattern(String input) {
         try {
             Pattern pattern = Pattern.compile(PRODUCT_QUANTITY_PATTERN);
             Matcher matcher = pattern.matcher(input);
         } catch (Exception e) {
             throw new IllegalArgumentException(MessageConstants.ERROR + MessageConstants.PATTERN_EXCEPTION);
+        }
+    }
+
+    private void validateProductName(String name) {
+        try {
+
         }
     }
 }
