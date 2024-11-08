@@ -26,26 +26,24 @@ public class InputView {
     }
 
     public String readMembershipDiscount() {
-        while (true) {
-            System.out.println(INPUT_MEMBERSHIP_DISCOUNT);
-            return readYOrN();
-        }
+        System.out.println(INPUT_MEMBERSHIP_DISCOUNT);
+        return readYOrN();
     }
 
     public String readPurchaseOtherProduct() {
-        while (true) {
-            System.out.println(INPUT_PURCHASE_OTHER_PRODUCT);
-            return readYOrN();
-        }
+        System.out.println(INPUT_PURCHASE_OTHER_PRODUCT);
+        return readYOrN();
     }
 
     private String readYOrN() {
         String input = Console.readLine();
-        try {
-            validateYOrN(input);
-            return input;
-        } catch (IllegalArgumentException e) {
-            System.out.println(MessageConstants.ERROR + e.getMessage());
+        while (true) {
+            try {
+                validateYOrN(input);
+                return input;
+            } catch (IllegalArgumentException e) {
+                System.out.println(MessageConstants.ERROR + e.getMessage());
+            }
         }
     }
 
@@ -82,7 +80,8 @@ public class InputView {
 
     private void validateProductName(String name) {
         if (name == null || name.isEmpty()) {
-            throw new IllegalArgumentException(MessageConstants.ERROR + MessageConstants.INPUT_PRODUCT_NAME_EMPTY_EXCEPTION);
+            throw new IllegalArgumentException(
+                    MessageConstants.ERROR + MessageConstants.INPUT_PRODUCT_NAME_EMPTY_EXCEPTION);
         }
     }
 
