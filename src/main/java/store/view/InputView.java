@@ -26,13 +26,27 @@ public class InputView {
     }
 
     public String readMembershipDiscount() {
-        System.out.println(INPUT_MEMBERSHIP_DISCOUNT);
-        return Console.readLine();
+        while (true) {
+            System.out.println(INPUT_MEMBERSHIP_DISCOUNT);
+            return readYOrN();
+        }
     }
 
     public String readPurchaseOtherProduct() {
-        System.out.println(INPUT_PURCHASE_OTHER_PRODUCT);
-        return Console.readLine();
+        while (true) {
+            System.out.println(INPUT_PURCHASE_OTHER_PRODUCT);
+            return readYOrN();
+        }
+    }
+
+    private String readYOrN() {
+        String input = Console.readLine();
+        try {
+            validateYOrN(input);
+            return input;
+        } catch (IllegalArgumentException e) {
+            System.out.println(MessageConstants.ERROR + e.getMessage());
+        }
     }
 
     private void parseInputProduct(String input) {
@@ -83,6 +97,12 @@ public class InputView {
         if (quantity <= 0) {
             throw new IllegalArgumentException(
                     MessageConstants.ERROR + MessageConstants.INPUT_PRODUCT_QUANTITY_BELOW_ZERO_EXCEPTION);
+        }
+    }
+
+    private void validateYOrN(String input) {
+        if (input != "Y" && input != "N") {
+            throw new IllegalArgumentException(MessageConstants.ERROR + MessageConstants.PATTERN_EXCEPTION);
         }
     }
 }
