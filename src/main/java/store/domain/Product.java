@@ -5,14 +5,14 @@ public class Product {
     private final int price;
     private int stock;
     private int promoStock;
-    private final String promotion;
+    private final String promotionName;
 
-    public Product(String name, int price, int stock, int promoStock, String promotion) {
+    public Product(String name, int price, int stock, int promoStock, String promotionName) {
         this.name = name;
         this.price = price;
         this.stock = stock;
         this.promoStock = promoStock;
-        this.promotion = promotion;
+        this.promotionName = promotionName;
     }
 
     public String getName() {
@@ -31,8 +31,8 @@ public class Product {
         return this.promoStock;
     }
 
-    public String getPromotion() {
-        return this.promotion;
+    public String getPromotionName() {
+        return this.promotionName;
     }
 
     public void reduceStock(int quantity) {
