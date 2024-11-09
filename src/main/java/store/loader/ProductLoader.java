@@ -68,7 +68,7 @@ public class ProductLoader {
         }
     }
 
-    private static Product createProduct(String[] fields) {
+    private Product createProduct(String[] fields) {
         try {
             String name = fields[0].trim();
             int price = Integer.parseInt(fields[1].trim());
