@@ -31,7 +31,7 @@ public class OutputView {
     }
 
     private String getPromotionInfo(Product product) {
-        return product.getPromotion().map(promotion -> promotion.getName()).orElse("");
+        return product.getPromotion().map(promotion -> " " + promotion.getName()).orElse("");
     }
 
     public void printReceipt(Receipt receipt) {
