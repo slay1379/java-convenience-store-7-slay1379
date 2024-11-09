@@ -32,4 +32,15 @@ public class StoreController {
         outputView.printAllProducts(products);
     }
 
+    private void processSingleOrder() {
+        String orderInput = inputView.readProduct();
+        try {
+
+        }
+    }
+
+    private boolean askMembershipDiscount() {
+        String membershipInput = inputView.readMembershipDiscount();
+        return membershipInput.equalsIgnoreCase("Y");
+    }
 }
