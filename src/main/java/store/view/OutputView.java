@@ -1,7 +1,9 @@
 package store.view;
 
 import java.util.List;
+import store.domain.OrderItem;
 import store.domain.Product;
+import store.domain.Receipt;
 
 public class OutputView {
 
@@ -29,5 +31,17 @@ public class OutputView {
 
     private String getPromotionInfo(Product product) {
         return product.getPromotion().map(promotion -> promotion.getName()).orElse("");
+    }
+
+    public void printReceipt(Receipt receipt) {
+        System.out.println("=========== 영수증 ===========");
+
+    }
+
+    private void printOrderItems(List<OrderItem> items) {
+        System.out.println("상품명\t수량\t금액");
+        for (OrderItem item : items) {
+            System.out.println(item.getProductName() + "\t" + item.getQuantity() + "\t" + item.getAmount());
+        }
     }
 }
