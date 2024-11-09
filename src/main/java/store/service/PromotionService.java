@@ -1,10 +1,17 @@
 package store.service;
 
 import java.time.LocalDate;
+import java.util.List;
 import store.domain.Product;
 import store.domain.Promotion;
 
 public class PromotionService {
+    private List<Promotion> promotions;
+
+    public PromotionService(List<Promotion> promotions) {
+        this.promotions = promotions;
+    }
+
     public boolean isPromotionApplicable(Product product) {
         return product.getPromotion().filter(this::isPromotionActive).isPresent();
     }
