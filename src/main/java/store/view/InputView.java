@@ -36,8 +36,8 @@ public class InputView {
     }
 
     private String readYOrN() {
-        String input = Console.readLine();
         while (true) {
+            String input = Console.readLine();
             try {
                 validateYOrN(input);
                 return input;
