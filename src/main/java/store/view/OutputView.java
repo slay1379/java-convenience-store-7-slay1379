@@ -55,4 +55,17 @@ public class OutputView {
             System.out.println(gift.getProductName()+"\t"+gift.getQuantity()+"\n");
         }
     }
+
+    private void printTotals(Receipt receipt) {
+        System.out.println("----------------------------");
+        System.out.println("총 구매액:\t" + receipt.getTotalAmount() + "원\n");
+        if (receipt.getPromotionDiscount() > 0) {
+            System.out.println("프로모션 할인:\t-%"+receipt.getPromotionDiscount()+"원\n");
+        }
+        if (receipt.getMembershipDiscount() > 0) {
+            System.out.println("멤버십 할인:\t-"+receipt.getMembershipDiscount()+"원\n");
+        }
+        System.out.println("----------------------------");
+        System.out.println("내실돈:\t\t"+receipt.getFinalAmount()+"원\n");
+    }
 }
