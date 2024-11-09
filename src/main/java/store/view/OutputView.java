@@ -36,7 +36,9 @@ public class OutputView {
 
     public void printReceipt(Receipt receipt) {
         System.out.println("=========== 영수증 ===========");
-
+        printOrderItems(receipt.getOrderItems());
+        printGiftItems(receipt.getGiftItems());
+        printTotals(receipt);
     }
 
     private void printOrderItems(List<OrderItem> items) {
