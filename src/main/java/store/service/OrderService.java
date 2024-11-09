@@ -24,7 +24,12 @@ public class OrderService {
         List<OrderItem> orderItems = createOrderItems(orders);
         List<GiftItem> giftItems = createGiftItems(orderItems);
 
+        int totalAmount = calculateTotalAmount(orderItems);
+        int promotionDiscount = calculatePromotionDiscount(orderItems);
+        int membershipDiscount = calculateMembershipDiscount(totalAmount, isMember);
+        int finalAmount = totalAmount - promotionDiscount - membershipDiscount;
 
+        receipt = new Receipt(orderItems, giftItems, totalAmount, promotionDiscount, membershipDiscount, finalAmount);
     }
 
     private List<OrderItem> createOrderItems(String[] orders) {
@@ -50,7 +55,7 @@ public class OrderService {
     }
 
     private String[] extractOrderDetails(String order) {
-        String content = order.substring(1., order.length() - 1);
+        String content = order.substring(1, order.length() - 1);
         String[] details = content.split("-");
         if (details.length != 2) {
             throw new IllegalArgumentException(MessageConstants.ERROR + MessageConstants.PATTERN_EXCEPTION);
@@ -117,10 +122,6 @@ public class OrderService {
         }
         int discount = (int) (amount * 0.1);
         return Math.min(discount, 10000);
-    }
-
-    private void createReceipt(Product product, int quantity, int getQuantity, int totalPrice) {
-
     }
 
     public Receipt getReceipt() {
