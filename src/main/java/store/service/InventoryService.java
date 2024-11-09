@@ -1,5 +1,6 @@
 package store.service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,5 +32,9 @@ public class InventoryService {
 
     public Map<String, Product> getProducts() {
         return products;
+    }
+
+    public List<Product> getAllProducts() {
+        return new ArrayList<>(products.values());
     }
 }
