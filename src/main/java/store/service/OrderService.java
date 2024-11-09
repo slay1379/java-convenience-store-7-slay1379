@@ -2,11 +2,13 @@ package store.service;
 
 import store.domain.Product;
 import store.domain.Promotion;
+import store.domain.Receipt;
 import store.exception.MessageConstants;
 
 public class OrderService {
     private InventoryService inventoryService;
     private PromotionService promotionService;
+    private Receipt receipt;
 
     public OrderService(InventoryService inventoryService, PromotionService promotionService) {
         this.inventoryService = inventoryService;
@@ -23,6 +25,7 @@ public class OrderService {
         }
         inventoryService.reduceStock(productName, quantity + getQuantity);
         int totalPrice = promotionService.calculateTotalPrice(product, quantity);
+        createReceipt(product, quantity, getQuantity, totalPrice)
     }
 
     private void validateOrder(String productName, int quantity) {
@@ -34,4 +37,5 @@ public class OrderService {
             throw new IllegalArgumentException(MessageConstants.ERROR + MessageConstants.QUANTITY_OVER_STOCK_EXCEPTION);
         }
     }
+
 }
