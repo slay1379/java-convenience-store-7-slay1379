@@ -68,6 +68,7 @@ public class OrderService {
         for (OrderItem item : orderItems) {
             GiftItem gift = createGiftItem(item);
         }
+        return giftItems;
     }
 
     private GiftItem createGiftItem(OrderItem item) {
