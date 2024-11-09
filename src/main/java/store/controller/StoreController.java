@@ -26,6 +26,12 @@ public class StoreController {
     }
 
     public void run() {
+        boolean continueShopping = true;
+        while (continueShopping) {
+            displayProducts();
+            processSingleOrder();
+            continueShopping = askContinueShopping();
+        }
     }
 
     private void displayProducts() {
