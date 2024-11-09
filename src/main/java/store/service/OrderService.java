@@ -1,5 +1,9 @@
 package store.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import store.domain.GiftItem;
+import store.domain.OrderItem;
 import store.domain.Product;
 import store.domain.Promotion;
 import store.domain.Receipt;
@@ -15,17 +19,60 @@ public class OrderService {
         this.promotionService = promotionService;
     }
 
-    public void processOrder(String productName, int quantity) {
+    public void processOrder(String orderInput, boolean isMember) {
+        String[] orders = orderInput.split(",");
+        List<OrderItem> orderItems = createOrderItems(orders);
+        List<GiftItem> giftItems = createGiftItems(orderItems);
+
+
+    }
+
+    private List<OrderItem> createOrderItems(String[] orders) {
+        List<OrderItem> orderItems = new ArrayList<>();
+        for (String order : orders) {
+            OrderItem item = createOrderItem(order);
+            orderItems.add(item);
+        }
+        return orderItems;
+    }
+
+    private OrderItem createOrderItem(String order) {
+        String[] details = extractOrderDetails(order);
+        String productName = details[0];
+        int quantity = Integer.parseInt(details[1]);
+
         validateOrder(productName, quantity);
         Product product = inventoryService.getProduct(productName);
-        Promotion promotion = product.getPromotion().orElse(null);
-        int getQuantity = 0;
-        if (promotion != null && promotionService.isPromotionApplicable(product)) {
-            getQuantity = promotionService.calculateGetQuantity(quantity, promotion);
+        inventoryService.reduceStock(productName, quantity);
+
+        int amount = product.getPrice() * quantity;
+        return new OrderItem(productName, quantity, amount);
+    }
+
+    private String[] extractOrderDetails(String order) {
+        String content = order.substring(1., order.length() - 1);
+        String[] details = content.split("-");
+        if (details.length != 2) {
+            throw new IllegalArgumentException(MessageConstants.ERROR + MessageConstants.PATTERN_EXCEPTION);
         }
-        inventoryService.reduceStock(productName, quantity + getQuantity);
-        int totalPrice = promotionService.calculateTotalPrice(product, quantity);
-        createReceipt(product, quantity, getQuantity, totalPrice)
+        return details;
+    }
+
+    private List<GiftItem> createGiftItems(List<OrderItem> orderItems) {
+        List<GiftItem> giftItems = new ArrayList<>();
+        for (OrderItem item : orderItems) {
+            GiftItem gift = createGiftItem(item);
+        }
+    }
+
+    private GiftItem createGiftItem(OrderItem item) {
+        Product product = inventoryService.getProduct(item.getProductName());
+        int getQuantity = calculateGetQuantity(product, item.getQuantity());
+        if (getQuantity > 0) {
+            inventoryService.reduceStock(product.getName(), getQuantity);
+            return new GiftItem(product.getName(), getQuantity);
+        }
+        return null;
     }
 
     private void validateOrder(String productName, int quantity) {
@@ -44,5 +91,39 @@ public class OrderService {
             return promotionService.calculateGetQuantity(quantity, promotion);
         }
         return 0;
+    }
+
+    private int calculateTotalAmount(List<OrderItem> orderItems) {
+        int total = 0;
+        for (OrderItem item : orderItems) {
+            total += item.getAmount();
+        }
+        return total;
+    }
+
+    private int calculatePromotionDiscount(List<OrderItem> orderItems) {
+        int discount = 0;
+        for (OrderItem item : orderItems) {
+            Product product = inventoryService.getProduct(item.getProductName());
+            int getQuantity = calculateGetQuantity(product, item.getQuantity());
+            discount += getQuantity * product.getPrice();
+        }
+        return discount;
+    }
+
+    private int calculateMembershipDiscount(int amount, boolean isMember) {
+        if (!isMember) {
+            return 0;
+        }
+        int discount = (int) (amount * 0.1);
+        return Math.min(discount, 10000);
+    }
+
+    private void createReceipt(Product product, int quantity, int getQuantity, int totalPrice) {
+
+    }
+
+    public Receipt getReceipt() {
+        return receipt;
     }
 }
