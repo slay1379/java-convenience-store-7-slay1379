@@ -3,6 +3,7 @@ package store.controller;
 import java.util.List;
 import store.domain.Product;
 import store.domain.Promotion;
+import store.exception.MessageConstants;
 import store.service.InventoryService;
 import store.service.OrderService;
 import store.service.PromotionService;
@@ -35,7 +36,11 @@ public class StoreController {
     private void processSingleOrder() {
         String orderInput = inputView.readProduct();
         try {
-
+            boolean isMember = askMembershipDiscount();
+            orderService.processOrder(orderInput, isMember);
+            outputView.printReceipt(orderService.getReceipt());
+        } catch (IllegalArgumentException e) {
+            System.out.println(MessageConstants.ERROR + e.getMessage());
         }
     }
 
