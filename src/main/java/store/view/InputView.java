@@ -86,16 +86,19 @@ public class InputView {
     }
 
     private void validateProductQuantity(String quantityStr) {
-        int quantity;
-        try {
-            quantity = Integer.parseInt(quantityStr);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException(
-                    MessageConstants.ERROR + MessageConstants.INPUT_PRODUCT_QUANTITY_NOT_NUMBER_EXCEPTION);
-        }
+        int quantity = parseQuantity(quantityStr);
         if (quantity <= 0) {
             throw new IllegalArgumentException(
                     MessageConstants.ERROR + MessageConstants.INPUT_PRODUCT_QUANTITY_BELOW_ZERO_EXCEPTION);
+        }
+    }
+
+    private int parseQuantity(String quantityStr) {
+        try {
+            return Integer.parseInt(quantityStr);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(
+                    MessageConstants.ERROR + MessageConstants.INPUT_PRODUCT_QUANTITY_NOT_NUMBER_EXCEPTION);
         }
     }
 
