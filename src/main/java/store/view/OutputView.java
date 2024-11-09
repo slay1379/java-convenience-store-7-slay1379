@@ -15,7 +15,9 @@ public class OutputView {
     }
 
     private void printProduct(Product product) {
-
+        String stockInfo = getStockInfo(product.getStock());
+        String promotionInfo = getPromotionInfo(product);
+        System.out.println("- " + product.getName() + product.getPrice() + "원 " + stockInfo + promotionInfo + "\n");
     }
 
     private String getStockInfo(int stock) {
