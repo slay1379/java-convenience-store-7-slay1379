@@ -10,6 +10,16 @@ public class Receipt {
     public int membershipDiscount;
     public int finalAmount;
 
+    public Receipt(List<OrderItem> orderItems, List<GiftItem> giftItems, int totalAmount, int promotionDiscount,
+                   int membershipDiscount, int finalAmount) {
+        this.orderItems = orderItems;
+        this.giftItems = giftItems;
+        this.totalAmount = totalAmount;
+        this.promotionDiscount = promotionDiscount;
+        this.membershipDiscount = membershipDiscount;
+        this.finalAmount = finalAmount;
+    }
+
     public List<OrderItem> getOrderItems() {
         return orderItems;
     }
