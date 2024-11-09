@@ -103,7 +103,7 @@ public class InputView {
     }
 
     private void validateYOrN(String input) {
-        if (input != "Y" && input != "N") {
+        if (!input.equalsIgnoreCase("Y") && !input.equalsIgnoreCase("N")) {
             throw new IllegalArgumentException(MessageConstants.ERROR + MessageConstants.PATTERN_EXCEPTION);
         }
     }
