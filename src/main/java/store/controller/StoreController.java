@@ -43,4 +43,9 @@ public class StoreController {
         String membershipInput = inputView.readMembershipDiscount();
         return membershipInput.equalsIgnoreCase("Y");
     }
+
+    private boolean askContinueShopping() {
+        String continueInput = inputView.readPurchaseOtherProduct();
+        return continueInput.equalsIgnoreCase("Y");
+    }
 }
