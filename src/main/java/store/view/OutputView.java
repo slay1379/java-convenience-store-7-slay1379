@@ -20,7 +20,8 @@ public class OutputView {
     private void printProduct(Product product) {
         String stockInfo = getStockInfo(product.getStock());
         String promotionInfo = getPromotionInfo(product);
-        System.out.println("- " + product.getName() + product.getPrice() + "원 " + stockInfo + promotionInfo + "\n");
+        System.out.println(
+                "- " + product.getName() + " " + product.getPrice() + "원 " + stockInfo + promotionInfo + "\n");
     }
 
     private String getStockInfo(int stock) {
@@ -54,7 +55,7 @@ public class OutputView {
         }
         System.out.println("\n증정상품\t수량");
         for (GiftItem gift : gifts) {
-            System.out.println(gift.getProductName()+"\t"+gift.getQuantity()+"\n");
+            System.out.println(gift.getProductName() + "\t" + gift.getQuantity() + "\n");
         }
     }
 
@@ -62,12 +63,12 @@ public class OutputView {
         System.out.println("----------------------------");
         System.out.println("총 구매액:\t" + receipt.getTotalAmount() + "원\n");
         if (receipt.getPromotionDiscount() > 0) {
-            System.out.println("프로모션 할인:\t-%"+receipt.getPromotionDiscount()+"원\n");
+            System.out.println("프로모션 할인:\t-%" + receipt.getPromotionDiscount() + "원\n");
         }
         if (receipt.getMembershipDiscount() > 0) {
-            System.out.println("멤버십 할인:\t-"+receipt.getMembershipDiscount()+"원\n");
+            System.out.println("멤버십 할인:\t-" + receipt.getMembershipDiscount() + "원\n");
         }
         System.out.println("----------------------------");
-        System.out.println("내실돈:\t\t"+receipt.getFinalAmount()+"원\n");
+        System.out.println("내실돈:\t\t" + receipt.getFinalAmount() + "원\n");
     }
 }
