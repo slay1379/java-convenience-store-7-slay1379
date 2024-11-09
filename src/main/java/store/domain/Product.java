@@ -1,18 +1,19 @@
 package store.domain;
 
+import java.util.Optional;
+import store.exception.MessageConstants;
+
 public class Product {
     private final String name;
     private final int price;
     private int stock;
-    private int promoStock;
-    private final String promotionName;
+    private Optional<Promotion> promotion;
 
-    public Product(String name, int price, int stock, int promoStock, String promotionName) {
+    public Product(String name, int price, int stock, Promotion promotion) {
         this.name = name;
         this.price = price;
         this.stock = stock;
-        this.promoStock = promoStock;
-        this.promotionName = promotionName;
+        this.promotion = Optional.ofNullable(promotion);
     }
 
     public String getName() {
@@ -27,19 +28,14 @@ public class Product {
         return this.stock;
     }
 
-    public int getPromoStock() {
-        return this.promoStock;
-    }
-
-    public String getPromotionName() {
-        return this.promotionName;
+    public Optional<Promotion> getPromotion() {
+        return promotion;
     }
 
     public void reduceStock(int quantity) {
-        this.stock -= quantity;
-    }
-
-    public void reducePromoStock(int quantity) {
-        this.promoStock -= quantity;
+        if (quantity > stock) {
+            throw new IllegalArgumentException(MessageConstants.ERROR + MessageConstants.QUANTITY_OVER_STOCK_EXCEPTION);
+        }
+        stock -= quantity;
     }
 }
