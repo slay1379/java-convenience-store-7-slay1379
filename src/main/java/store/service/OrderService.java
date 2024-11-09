@@ -38,4 +38,11 @@ public class OrderService {
         }
     }
 
+    private int calculateGetQuantity(Product product, int quantity) {
+        Promotion promotion = product.getPromotion().orElse(null);
+        if (promotion != null && promotionService.isPromotionApplicable(product)) {
+            return promotionService.calculateGetQuantity(quantity, promotion);
+        }
+        return 0;
+    }
 }
