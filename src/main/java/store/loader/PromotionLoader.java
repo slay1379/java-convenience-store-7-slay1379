@@ -6,13 +6,15 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import javax.print.DocFlavor.STRING;
 import store.domain.Promotion;
 import store.exception.MessageConstants;
 
 public class PromotionLoader {
+    private static final String PROMOTION_FILE_PATH = "src/main/resources/promotions.md";
+
     public List<Promotion> readPromotion() {
-        String filePath = "src/main/resources/promotions.md";
-        return loadPromotions(filePath);
+        return loadPromotions(PROMOTION_FILE_PATH);
     }
 
     private List<Promotion> loadPromotions(String filePath) {
@@ -39,12 +41,12 @@ public class PromotionLoader {
 
     private void addPromotionIfValid(String line, List<Promotion> promotions) {
         String[] fields = line.split(",");
-        if (fields.length == 5) {
-            Promotion promotion = createPromotion(fields);
-            promotions.add(promotion);
-        } else {
+        if (fields.length != 5) {
             System.out.println(MessageConstants.ERROR + MessageConstants.FILE_FORM_EXCEPTION);
+            return;
         }
+        Promotion promotion = createPromotion(fields);
+        promotions.add(promotion);
     }
 
     private Promotion createPromotion(String[] fields) {
