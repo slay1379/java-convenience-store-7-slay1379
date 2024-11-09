@@ -1,6 +1,7 @@
 package store.view;
 
 import java.util.List;
+import store.domain.GiftItem;
 import store.domain.OrderItem;
 import store.domain.Product;
 import store.domain.Receipt;
@@ -42,6 +43,16 @@ public class OutputView {
         System.out.println("상품명\t수량\t금액");
         for (OrderItem item : items) {
             System.out.println(item.getProductName() + "\t" + item.getQuantity() + "\t" + item.getAmount());
+        }
+    }
+
+    private void printGiftItems(List<GiftItem> gifts) {
+        if (gifts.isEmpty()) {
+            return;
+        }
+        System.out.println("\n증정상품\t수량");
+        for (GiftItem gift : gifts) {
+            System.out.println(gift.getProductName()+"\t"+gift.getQuantity()+"\n");
         }
     }
 }
