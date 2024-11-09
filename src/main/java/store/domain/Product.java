@@ -17,15 +17,15 @@ public class Product {
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 
     public int getPrice() {
-        return this.price;
+        return price;
     }
 
     public int getStock() {
-        return this.stock;
+        return stock;
     }
 
     public Optional<Promotion> getPromotion() {
@@ -37,5 +37,9 @@ public class Product {
             throw new IllegalArgumentException(MessageConstants.ERROR + MessageConstants.QUANTITY_OVER_STOCK_EXCEPTION);
         }
         stock -= quantity;
+    }
+
+    public String getIdentifier() {
+        return name + (promotion.map(p -> "_" + p.getName()).orElse(""));
     }
 }
