@@ -9,4 +9,5 @@ public class MessageConstants {
     public static final String INPUT_PRODUCT_NAME_EMPTY_EXCEPTION = "상품명은 공백일 수 없습니다.";
     public static final String INPUT_PRODUCT_QUANTITY_NOT_NUMBER_EXCEPTION = "수량은 숫자여야 합니다.";
     public static final String INPUT_PRODUCT_QUANTITY_BELOW_ZERO_EXCEPTION = "수량은 0 보다 커야 합니다.";
+    public static final String QUANTITY_OVER_STOCK_EXCEPTION = "재고 수량을 초과하여 구매할 수 없습니다.";
 }
