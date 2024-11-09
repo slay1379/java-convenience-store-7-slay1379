@@ -24,4 +24,8 @@ public class OutputView {
         }
         return "재고 없음";
     }
+
+    private String getPromotionInfo(Product product) {
+        return product.getPromotion().map(promotion -> promotion.getName()).orElse("");
+    }
 }
