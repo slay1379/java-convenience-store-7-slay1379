@@ -129,6 +129,21 @@ public class OrderService {
     }
 
     private OrderItem createPromotionalOrderItem(List<Product> products, String productName, int quantity) {
+        Product promotionalProduct = products.stream()
+                .filter(p -> p.getPromotion().isPresent())
+                .findFirst()
+                .orElseThrow();
+
+        // 프로모션으로 추가로 받을 수 있는 수량 확인
+        int additionalFreeQuantity = promotionService.calculateAdditionalFreeQuantity(promotionalProduct, quantity);
+        if (additionalFreeQuantity > 0) {
+            String addResponse = inputView.confirmAdditionalPromotion(productName, additionalFreeQuantity);
+            if (addResponse.equalsIgnoreCase("Y")) {
+                // 구매 수량 업데이트
+                quantity += additionalFreeQuantity;
+            }
+        }
+
         int remainingQuantity = quantity;
         int totalAmount = 0;
         int usedPromotionStock = 0;
@@ -140,23 +155,27 @@ public class OrderService {
 
             int availableStock = product.getPromotionStock() + product.getRegularStock();
             if (availableStock > 0) {
+                // 프로모션 재고 사용
                 usedPromotionStock = Math.min(product.getPromotionStock(), remainingQuantity);
                 remainingQuantity -= usedPromotionStock;
 
+                // 일반 재고로 처리해야 할 수량이 있는 경우
                 int usedRegularStock = Math.min(product.getRegularStock(), remainingQuantity);
                 if (usedRegularStock > 0 && usedPromotionStock < quantity) {
-                    // 프로모션 재고가 부족한 경우에만 확인
+                    // 프로모션 재고가 부족한 경우 확인
                     int remainingWithoutPromotion = quantity - usedPromotionStock;
-                    boolean confirm = inputView.confirmPartialPromotion(remainingWithoutPromotion, productName)
-                            .equalsIgnoreCase("Y");
-                    if (!confirm) {
+                    String response = inputView.confirmPartialPromotion(remainingWithoutPromotion, productName);
+
+                    if (!response.equalsIgnoreCase("Y")) {
                         return null;
                     }
                 }
 
+                // 재고 감소 및 금액 계산
                 product.reduceStock(usedPromotionStock, true);
                 product.reduceStock(usedRegularStock, false);
-                totalAmount += product.getPrice() * (usedPromotionStock + usedRegularStock);
+                // 전체 수량(원래 수량 + 추가된 수량)에 대해 금액 계산
+                totalAmount += product.getPrice() * quantity;
                 remainingQuantity -= usedRegularStock;
             }
         }
@@ -166,6 +185,7 @@ public class OrderService {
                     MessageConstants.QUANTITY_OVER_STOCK_EXCEPTION);
         }
 
+        // 전체 수량(원래 수량 + 추가된 수량)을 OrderItem에 반영
         return new OrderItem(productName, quantity, totalAmount, usedPromotionStock);
     }
 

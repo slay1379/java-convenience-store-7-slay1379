@@ -32,7 +32,7 @@ public class OutputView {
             }
             if (product.getRegularStock() > 0) {
                 printProductWithRegularStock(product);
-            } else if (hasPrintedPromotion) {
+            } else {
                 printNoRegularStockWithPromotion(product);
             }
         }
@@ -64,7 +64,7 @@ public class OutputView {
         String priceWithComma = String.format("%,d", product.getPrice());
         String promotionInfo = getPromotionInfo(product);
         System.out.println(
-                "- " + product.getName() + " " + priceWithComma + "원 재고 없음" + promotionInfo);
+                "- " + product.getName() + " " + priceWithComma + "원 재고 없음");
     }
 
     private String getPromotionInfo(Product product) {
