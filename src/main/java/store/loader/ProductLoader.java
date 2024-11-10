@@ -17,8 +17,7 @@ public class ProductLoader {
         List<Product> products = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String line;
-            br.readLine(); // 헤더 스킵
-            List<String> productNames = new ArrayList<>(); // 추가된 부분
+            br.readLine();
             while ((line = br.readLine()) != null) {
                 String[] splitLine = line.split(",");
                 String name = splitLine[0].trim();
@@ -29,44 +28,37 @@ public class ProductLoader {
                 if (promotionName != null) {
                     promotion = findPromotionByName(promotions, promotionName);
                 }
-                Product product = new Product(name, price, stock, promotion);
-                products.add(product);
-                productNames.add(name); // 추가된 부분
+
+                Product existingProduct = findProductByName(products, name);
+                if (existingProduct != null) {
+                    if (promotion == null) {
+                        existingProduct.addRegularStock(stock);
+                    } else {
+                        existingProduct.addPromotionStock(stock, promotion);
+                    }
+                } else {
+                    Product product = new Product(name, price);
+                    if (promotion == null) {
+                        product.addRegularStock(stock);
+                    } else {
+                        product.addPromotionStock(stock, promotion);
+                    }
+                    products.add(product);
+                }
             }
-            // 일반 상품이 없는 경우 재고 0인 일반 상품 추가
-            addMissingRegularProducts(products, productNames);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return products;
     }
 
-    private void addMissingRegularProducts(List<Product> products, List<String> productNames) {
-        List<String> uniqueNames = new ArrayList<>();
+    private Product findProductByName(List<Product> products, String name) {
         for (Product product : products) {
-            if (!uniqueNames.contains(product.getName())) {
-                uniqueNames.add(product.getName());
+            if (product.getName().equals(name)) {
+                return product;
             }
         }
-        for (String name : uniqueNames) {
-            boolean hasRegular = false;
-            boolean hasPromotion = false;
-            int price = 0;
-            for (Product product : products) {
-                if (product.getName().equals(name)) {
-                    price = product.getPrice();
-                    if (!product.getPromotion().isPresent()) {
-                        hasRegular = true;
-                    } else {
-                        hasPromotion = true;
-                    }
-                }
-            }
-            if (!hasRegular && hasPromotion) {
-                // 재고 0인 일반 상품 추가
-                products.add(new Product(name, price, 0, null));
-            }
-        }
+        return null;
     }
 
     private Promotion findPromotionByName(List<Promotion> promotions, String name) {

@@ -31,19 +31,8 @@ public class PromotionService {
         }
         Promotion promotion = product.getPromotion().get();
         if (quantity >= promotion.getBuy()) {
-            return (quantity / promotion.getBuy()) * promotion.getGet();
+            return (quantity / (promotion.getBuy() + promotion.getGet())) * promotion.getGet();
         }
         return 0;
-    }
-
-    public int getRequiredQuantityForPromotion(Product product, int currentQuantity) {
-        if (!isPromotionApplicable(product)) {
-            return currentQuantity;
-        }
-        Promotion promotion = product.getPromotion().get();
-        if (currentQuantity >= promotion.getBuy()) {
-            return currentQuantity;
-        }
-        return promotion.getBuy();
     }
 }

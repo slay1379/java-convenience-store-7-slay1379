@@ -22,11 +22,11 @@ public class OrderService {
     }
 
     public void processOrder(String orderInput, boolean isMember) {
-        List<OrderItem> orderItems = createOrderItems(orderInput.split(","));
         if (orderInput.isEmpty()) {
             System.out.println("구매한 상품이 없습니다.");
             return;
         }
+        List<OrderItem> orderItems = createOrderItems(orderInput.split(","));
         List<GiftItem> giftItems = createGiftItems(orderItems);
 
         int totalAmount = calculateTotalAmount(orderItems);
@@ -54,53 +54,35 @@ public class OrderService {
         String productName = details[0];
         int quantity = Integer.parseInt(details[2]);
 
-        String identifier = findAvailableProductIdentifier(productName, quantity);
-        if (identifier == null) {
-            System.out.println(MessageConstants.ERROR + MessageConstants.QUANTITY_OVER_STOCK_EXCEPTION);
-            return null;
-        }
-
-        Product product = inventoryService.getProduct(identifier);
-        int adjustQuantity = adjustQuantityForPromotion(product, quantity);
-        if (adjustQuantity == -1) {
-            return null;
-        }
-
-        inventoryService.reduceStock(identifier, adjustQuantity);
-        int amount = product.getPrice() * adjustQuantity;
-        return new OrderItem(identifier, productName, adjustQuantity, amount);
-    }
-
-    private int adjustQuantityForPromotion(Product product, int quantity) {
-        int requiredQuantity = promotionService.getRequiredQuantityForPromotion(product, quantity);
-        if (requiredQuantity > quantity) {
-            System.out.printf("현재 %s은(는) %d개를 무료로 더 받을 수 있습니다. 추가하시겠습니까? (Y/N)",
-                    product.getName(), requiredQuantity - quantity);
-            if (inputView.readYOrN().equalsIgnoreCase("Y")) {
-                quantity = requiredQuantity;
-            }
-        }
-        int availableStock = product.getStock();
-        if (availableStock < quantity) {
-            System.out.printf("현재 %s %d개는 프로모션 할인이 적용되지 않습니다. 그래도 구매하시겠습니가? (Y/N)",
-                    product.getName(), quantity - availableStock);
-            if (inputView.readYOrN().equalsIgnoreCase("Y")) {
-                quantity = availableStock;
-            } else {
-                return -1;
-            }
-        }
-        return quantity;
-    }
-
-    private String findAvailableProductIdentifier(String productName, int quantity) {
         List<Product> products = inventoryService.getProductsByName(productName);
+
+        int remainingQuantity = quantity;
+        int totalAmount = 0;
+        int usedPromotionStock = 0;
+
         for (Product product : products) {
-            if (product.getStock() >= quantity) {
-                return product.getIdentifier();
+            if (remainingQuantity <= 0) {
+                break;
+            }
+
+            int availableStock = product.getPromotionStock() + product.getRegularStock();
+            if (availableStock > 0) {
+                usedPromotionStock = Math.min(product.getPromotionStock(), remainingQuantity);
+                product.reduceStock(usedPromotionStock, true);
+                remainingQuantity -= usedPromotionStock;
+
+                int usedRegularStock = Math.min(product.getRegularStock(), remainingQuantity);
+                product.reduceStock(usedRegularStock, false);
+                remainingQuantity -= usedRegularStock;
+
+                totalAmount += product.getPrice() * quantity;
             }
         }
-        throw new IllegalArgumentException(MessageConstants.ERROR + MessageConstants.QUANTITY_OVER_STOCK_EXCEPTION);
+        if (remainingQuantity > 0) {
+            throw new IllegalArgumentException(MessageConstants.ERROR + MessageConstants.QUANTITY_OVER_STOCK_EXCEPTION);
+        }
+
+        return new OrderItem(productName, quantity, totalAmount, usedPromotionStock);
     }
 
     private String[] extractOrderDetails(String order) {
@@ -115,13 +97,6 @@ public class OrderService {
         throw new IllegalArgumentException(MessageConstants.ERROR + MessageConstants.PATTERN_EXCEPTION);
     }
 
-    private void validateOrder(String identifier, int quantity) {
-        Product product = inventoryService.getProduct(identifier);
-        if (product == null || product.getStock() < quantity) {
-            throw new IllegalArgumentException(MessageConstants.ERROR + MessageConstants.QUANTITY_OVER_STOCK_EXCEPTION);
-        }
-    }
-
     private List<GiftItem> createGiftItems(List<OrderItem> orderItems) {
         List<GiftItem> giftItems = new ArrayList<>();
         for (OrderItem item : orderItems) {
@@ -134,10 +109,9 @@ public class OrderService {
     }
 
     private GiftItem createGiftItem(OrderItem item) {
-        Product product = inventoryService.getProduct(item.getProductIdentifier());
-        int getQuantity = promotionService.calculateGetQuantity(product, item.getQuantity());
+        Product product = inventoryService.getProduct(item.getProductName());
+        int getQuantity = promotionService.calculateGetQuantity(product, item.getUsedPromotionStock());
         if (getQuantity > 0) {
-            inventoryService.reduceStock(product.getIdentifier(), getQuantity);
             return new GiftItem(product.getName(), getQuantity);
         }
         return null;
@@ -154,8 +128,8 @@ public class OrderService {
     private int calculatePromotionDiscount(List<OrderItem> orderItems) {
         int discount = 0;
         for (OrderItem item : orderItems) {
-            Product product = inventoryService.getProduct(item.getProductIdentifier());
-            int getQuantity = promotionService.calculateGetQuantity(product, item.getQuantity());
+            Product product = inventoryService.getProduct(item.getProductName());
+            int getQuantity = promotionService.calculateGetQuantity(product, item.getUsedPromotionStock());
             discount += getQuantity * product.getPrice();
         }
         return discount;

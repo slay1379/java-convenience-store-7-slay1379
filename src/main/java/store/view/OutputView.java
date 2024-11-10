@@ -21,25 +21,38 @@ public class OutputView {
                 .collect(Collectors.groupingBy(Product::getName, LinkedHashMap::new, Collectors.toList()));
 
         for (List<Product> productList : productsByName.values()) {
-            for (Product product : productList) {
-                printProduct(product);
+            Product product = productList.get(0);
+            if (product.getPromotionStock() > 0) {
+                printProductWithPromotion(product);
+                if (product.getRegularStock() == 0) {
+                    printNoRegularStock(product);
+                }
+            }
+            if (product.getRegularStock() > 0) {
+                printProductWithRegularStock(product);
             }
         }
     }
 
-    private void printProduct(Product product) {
-        String stockInfo = getStockInfo(product.getStock());
+    private void printProductWithPromotion(Product product) {
+        String stockInfo = product.getPromotionStock() + "개";
         String promotionInfo = getPromotionInfo(product);
         String priceWithComma = String.format("%,d", product.getPrice());
         System.out.println(
                 "- " + product.getName() + " " + priceWithComma + "원 " + stockInfo + promotionInfo);
     }
 
-    private String getStockInfo(int stock) {
-        if (stock > 0) {
-            return stock + "개";
-        }
-        return "재고 없음";
+    private void printProductWithRegularStock(Product product) {
+        String stockInfo = product.getRegularStock() + "개";
+        String priceWithComma = String.format("%,d", product.getPrice());
+        System.out.println(
+                "- " + product.getName() + " " + priceWithComma + "원 " + stockInfo);
+    }
+
+    private void printNoRegularStock(Product product) {
+        String priceWithComma = String.format("%,d", product.getPrice());
+        System.out.println(
+                "- " + product.getName() + " " + priceWithComma + "원 재고 없음");
     }
 
     private String getPromotionInfo(Product product) {

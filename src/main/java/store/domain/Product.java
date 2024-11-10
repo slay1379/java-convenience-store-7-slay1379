@@ -6,16 +6,19 @@ import store.exception.MessageConstants;
 public class Product {
     private final String name;
     private final int price;
-    private int stock;
-    private Optional<Promotion> promotion;
+    private int regularStock;
+    private int promotionStock;
+    private Promotion promotion;
 
-    public Product(String name, int price, int stock, Promotion promotion) {
+    public Product(String name, int price) {
         this.name = name;
         this.price = price;
-        this.stock = stock;
-        this.promotion = Optional.ofNullable(promotion);
+        this.regularStock = 0;
+        this.promotionStock = 0;
+        this.promotion = null;
     }
 
+    // Getter 메소드들
     public String getName() {
         return name;
     }
@@ -24,41 +27,32 @@ public class Product {
         return price;
     }
 
-    public int getStock() {
-        return stock;
+    public int getRegularStock() {
+        return regularStock;
+    }
+
+    public int getPromotionStock() {
+        return promotionStock;
     }
 
     public Optional<Promotion> getPromotion() {
-        return promotion;
+        return Optional.ofNullable(promotion);
     }
 
-    public void reduceStock(int quantity) {
-        if (quantity > stock) {
-            throw new IllegalArgumentException(MessageConstants.ERROR + MessageConstants.QUANTITY_OVER_STOCK_EXCEPTION);
+    public void addRegularStock(int stock) {
+        this.regularStock += stock;
+    }
+
+    public void addPromotionStock(int stock, Promotion promotion) {
+        this.promotionStock += stock;
+        this.promotion = promotion;
+    }
+
+    public void reduceStock(int quantity, boolean isPromotion) {
+        if (isPromotion && promotionStock >= quantity) {
+            promotionStock -= quantity;
+        } else if (!isPromotion && regularStock >= quantity) {
+            regularStock -= quantity;
         }
-        stock -= quantity;
-    }
-
-    public String getIdentifier() {
-        // 프로모션이 있는 경우 상품명_프로모션명
-        return promotion.map(p -> name + "_" + p.getName())
-                .orElse(name);  // 프로모션이 없는 경우 상품명만
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder result = new StringBuilder();
-        result.append(name).append(" ");
-
-        result.append(String.format("%,d", price)).append("원 ");
-
-        if (stock > 0) {
-            result.append(stock).append("개");
-        } else {
-            result.append("재고 없음");
-        }
-
-        promotion.ifPresent(p -> result.append(" ").append(p.getName()));
-        return result.toString();
     }
 }

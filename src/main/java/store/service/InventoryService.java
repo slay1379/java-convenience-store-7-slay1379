@@ -1,7 +1,7 @@
 package store.service;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap; // 변경된 부분
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import store.domain.Product;
@@ -11,9 +11,9 @@ public class InventoryService {
     private Map<String, Product> inventory;
 
     public InventoryService(List<Product> products) {
-        this.inventory = new LinkedHashMap<>(); // 변경된 부분
+        this.inventory = new LinkedHashMap<>();
         for (Product product : products) {
-            this.inventory.put(product.getIdentifier(), product);
+            this.inventory.put(product.getName(), product);
         }
     }
 
@@ -28,6 +28,15 @@ public class InventoryService {
                 products.add(product);
             }
         }
+
+        products.sort((p1, p2) -> {
+            if (p1.getPromotion().isPresent() && !p2.getPromotion().isPresent()) {
+                return -1;
+            } else if (!p1.getPromotion().isPresent() && p2.getPromotion().isPresent()) {
+                return 1;
+            }
+            return 0;
+        });
         return products;
     }
 
@@ -35,11 +44,12 @@ public class InventoryService {
         return new ArrayList<>(inventory.values());
     }
 
-    public void reduceStock(String identifier, int quantity) {
+    public void reduceStock(String identifier, int quantity, boolean usePromotionStock) {
         Product product = getProduct(identifier);
         if (product == null) {
             throw new IllegalArgumentException(MessageConstants.ERROR + MessageConstants.NULL_PRODUCT_EXCEPTION);
         }
-        product.reduceStock(quantity);
+        product.reduceStock(quantity, usePromotionStock);
     }
+
 }
