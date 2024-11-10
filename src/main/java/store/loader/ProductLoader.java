@@ -43,32 +43,20 @@ public class ProductLoader {
 
     private void readLines(BufferedReader br, List<Product> products) throws IOException {
         String line;
-        Map<String, Product> productMap = new HashMap<>();
         while ((line = br.readLine()) != null) {
-            addOrUpdateProduct(line, productMap);
+            Product product = createProduct(line);
+            if (product != null) {
+                products.add(product);
+            }
         }
-        products.addAll(productMap.values());
     }
 
-    private void addOrUpdateProduct(String line, Map<String, Product> productMap) {
+    private Product createProduct(String line) {
         String[] fields = line.split(",");
         if (fields.length != 4) {
             System.out.println(MessageConstants.ERROR + MessageConstants.FILE_FORM_EXCEPTION);
-            return;
+            return null;
         }
-        Product product = createProduct(fields);
-        if (product == null) {
-            return;
-        }
-        String productName = product.getName();
-        if (productMap.containsKey(productName)) {
-            mergeProduct(productMap.get(productName), product);
-        } else {
-            productMap.put(productName, product);
-        }
-    }
-
-    private Product createProduct(String[] fields) {
         try {
             String name = fields[0].trim();
             int price = Integer.parseInt(fields[1].trim());
@@ -87,9 +75,5 @@ public class ProductLoader {
             return null;
         }
         return promotionField;
-    }
-
-    private void mergeProduct(Product existingProduct, Product newProduct) {
-        existingProduct.reduceStock(-newProduct.getStock());
     }
 }
