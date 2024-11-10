@@ -11,4 +11,6 @@ public class MessageConstants {
     public static final String INPUT_PRODUCT_QUANTITY_BELOW_ZERO_EXCEPTION = "수량은 0 보다 커야 합니다.";
     public static final String QUANTITY_OVER_STOCK_EXCEPTION = "재고 수량을 초과하여 구매할 수 없습니다.";
     public static final String NULL_PRODUCT_EXCEPTION = "상품이 없습니다.";
+    public static final String NOT_EXIST_PRODUCT_EXCEPTION = "존재하지 않는 상품입니다.";
+    public static final String RE_INPUT = " 다시 입력해 주세요.";
 }
