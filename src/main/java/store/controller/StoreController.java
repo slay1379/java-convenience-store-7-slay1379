@@ -20,9 +20,9 @@ public class StoreController {
     public StoreController(List<Product> products, List<Promotion> promotions) {
         this.inventoryService = new InventoryService(products);
         this.promotionService = new PromotionService(promotions);
-        this.orderService = new OrderService(inventoryService, promotionService);
         this.inputView = new InputView();
         this.outputView = new OutputView();
+        this.orderService = new OrderService(inventoryService, promotionService,inputView);
     }
 
     public void run() {

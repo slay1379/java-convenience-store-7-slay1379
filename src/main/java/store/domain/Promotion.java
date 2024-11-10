@@ -38,6 +38,9 @@ public class Promotion {
     }
 
     public boolean isPromotionActive(LocalDate date) {
+        if (startDate == null || endDate == null) {
+            return false;
+        }
         return !date.isBefore(startDate) && !date.isAfter(endDate);
     }
 }

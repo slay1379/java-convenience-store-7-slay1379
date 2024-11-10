@@ -16,48 +16,13 @@ public class OutputView {
     public void printAllProducts(List<Product> products) {
         System.out.println(GREETING_MESSAGE);
 
-        // 이름으로 상품들을 그룹화 (순서 유지)
+        // 이름으로 제품을 그룹화하면서 입력된 순서를 유지합니다.
         Map<String, List<Product>> productsByName = products.stream()
                 .collect(Collectors.groupingBy(Product::getName, LinkedHashMap::new, Collectors.toList()));
 
-        // 각 상품명에 대해 처리
-        for (Map.Entry<String, List<Product>> entry : productsByName.entrySet()) {
-            String productName = entry.getKey();
-            List<Product> productList = entry.getValue();
-
-            // 프로모션 상품과 일반 상품 분리
-            Product promoProduct = null;
-            Product regularProduct = null;
-
+        for (List<Product> productList : productsByName.values()) {
             for (Product product : productList) {
-                if (product.getPromotion().isPresent()) {
-                    promoProduct = product;
-                } else {
-                    regularProduct = product;
-                }
-            }
-
-            // 프로모션 상품 출력
-            if (promoProduct != null) {
-                printProduct(promoProduct);
-            }
-
-            // 일반 상품 출력 또는 재고 없음 출력
-            if (regularProduct != null) {
-                if (regularProduct.getStock() > 0) {
-                    printProduct(regularProduct);
-                } else {
-                    String priceWithComma = String.format("%,d", regularProduct.getPrice());
-                    System.out.println("- " + regularProduct.getName() + " "
-                            + priceWithComma + "원 재고 없음");
-                }
-            } else {
-                // 일반 상품이 없는 경우 재고 없음 출력
-                if (promoProduct != null) {
-                    String priceWithComma = String.format("%,d", promoProduct.getPrice());
-                    System.out.println("- " + promoProduct.getName() + " "
-                            + priceWithComma + "원 재고 없음");
-                }
+                printProduct(product);
             }
         }
     }

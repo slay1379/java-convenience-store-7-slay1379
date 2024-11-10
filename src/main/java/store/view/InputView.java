@@ -35,7 +35,7 @@ public class InputView {
         return readYOrN();
     }
 
-    private String readYOrN() {
+    public String readYOrN() {
         while (true) {
             String input = Console.readLine();
             try {
