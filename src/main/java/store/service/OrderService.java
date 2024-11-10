@@ -134,13 +134,15 @@ public class OrderService {
                 .findFirst()
                 .orElseThrow();
 
-        // 프로모션으로 추가로 받을 수 있는 수량 확인
-        int additionalFreeQuantity = promotionService.calculateAdditionalFreeQuantity(promotionalProduct, quantity);
-        if (additionalFreeQuantity > 0) {
-            String addResponse = inputView.confirmAdditionalPromotion(productName, additionalFreeQuantity);
-            if (addResponse.equalsIgnoreCase("Y")) {
-                // 구매 수량 업데이트
-                quantity += additionalFreeQuantity;
+        if (promotionalProduct.getPromotionStock() > quantity) {
+            // 프로모션으로 추가로 받을 수 있는 수량 확인
+            int additionalFreeQuantity = promotionService.calculateAdditionalFreeQuantity(promotionalProduct, quantity);
+            if (additionalFreeQuantity > 0) {
+                String addResponse = inputView.confirmAdditionalPromotion(productName, additionalFreeQuantity);
+                if (addResponse.equalsIgnoreCase("Y")) {
+                    // 구매 수량 업데이트
+                    quantity += additionalFreeQuantity;
+                }
             }
         }
 
@@ -164,7 +166,11 @@ public class OrderService {
                 if (usedRegularStock > 0 && usedPromotionStock < quantity) {
                     // 프로모션 재고가 부족한 경우 확인
                     int remainingWithoutPromotion = quantity - usedPromotionStock;
-                    String response = inputView.confirmPartialPromotion(remainingWithoutPromotion, productName);
+
+                    String response = inputView.confirmPartialPromotion(
+                            remainingWithoutPromotion + product.getPromotionStock() % (
+                                    product.getPromotion().get().getBuy() + product.getPromotion().get().getGet()),
+                            productName);
 
                     if (!response.equalsIgnoreCase("Y")) {
                         return null;
