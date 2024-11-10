@@ -2,6 +2,7 @@ package store.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.jupiter.api.Order;
 import store.domain.GiftItem;
 import store.domain.OrderItem;
 import store.domain.Product;
@@ -21,30 +22,61 @@ public class OrderService {
         this.inputView = inputView;
     }
 
-    public void processOrder(String orderInput, boolean isMember) {
+    public static class OrderValidationResult {
+        private final boolean isValid;
+        private final List<OrderItem> orderItems;
+
+        public OrderValidationResult(boolean isValid, List<OrderItem> orderItems) {
+            this.isValid = isValid;
+            this.orderItems = orderItems;
+        }
+
+        public boolean isValid() {
+            return isValid;
+        }
+
+        public List<OrderItem> getOrderItems() {
+            return orderItems;
+        }
+    }
+
+    public OrderValidationResult validateOrder(String orderInput) {
         if (orderInput.isEmpty()) {
             System.out.println("구매한 상품이 없습니다.");
-            return;
+            return new OrderValidationResult(false, null);
         }
+
         List<OrderItem> orderItems = createOrderItems(orderInput.split(","));
+        if (orderItems == null) {
+            return new OrderValidationResult(false, null);
+        }
+
+        return new OrderValidationResult(true, orderItems);
+    }
+
+
+    public void processOrder(String orderInput, boolean isMember, OrderValidationResult validationResult) {
+        List<OrderItem> orderItems = validationResult.getOrderItems();
         List<GiftItem> giftItems = createGiftItems(orderItems);
 
         int totalAmount = calculateTotalAmount(orderItems);
         int promotionDiscount = calculatePromotionDiscount(orderItems);
         int amountAfterPromotion = totalAmount - promotionDiscount;
-        int membershipDiscount = calculateMembershipDiscount(amountAfterPromotion, isMember);
+        int membershipDiscount = calculateMembershipDiscount(orderItems, isMember);
         int finalAmount = amountAfterPromotion - membershipDiscount;
 
-        receipt = new Receipt(orderItems, giftItems, totalAmount, promotionDiscount, membershipDiscount, finalAmount);
+        receipt = new Receipt(orderItems, giftItems, totalAmount, promotionDiscount,
+                membershipDiscount, finalAmount);
     }
 
     private List<OrderItem> createOrderItems(String[] orders) {
         List<OrderItem> orderItems = new ArrayList<>();
         for (String order : orders) {
             OrderItem item = createOrderItem(order);
-            if (item != null) {
-                orderItems.add(item);
+            if (item == null) {
+                return null;
             }
+            orderItems.add(item);
         }
         return orderItems;
     }
@@ -56,6 +88,47 @@ public class OrderService {
 
         List<Product> products = inventoryService.getProductsByName(productName);
 
+        // 프로모션이 없는 상품인 경우 바로 일반 재고에서 처리
+        if (!hasPromotion(products)) {
+            return createNonPromotionalOrderItem(products, productName, quantity);
+        }
+
+        return createPromotionalOrderItem(products, productName, quantity);
+    }
+
+    private boolean hasPromotion(List<Product> products) {
+        return products.stream()
+                .anyMatch(product -> product.getPromotion().isPresent());
+    }
+
+    private OrderItem createNonPromotionalOrderItem(List<Product> products, String productName, int quantity) {
+        int totalStock = products.stream()
+                .mapToInt(Product::getRegularStock)
+                .sum();
+
+        if (quantity > totalStock) {
+            throw new IllegalArgumentException(MessageConstants.ERROR +
+                    MessageConstants.QUANTITY_OVER_STOCK_EXCEPTION);
+        }
+
+        int remainingQuantity = quantity;
+        int totalAmount = 0;
+
+        for (Product product : products) {
+            if (remainingQuantity <= 0) {
+                break;
+            }
+
+            int usedStock = Math.min(product.getRegularStock(), remainingQuantity);
+            product.reduceStock(usedStock, false);
+            remainingQuantity -= usedStock;
+            totalAmount += product.getPrice() * usedStock;
+        }
+
+        return new OrderItem(productName, quantity, totalAmount, 0);
+    }
+
+    private OrderItem createPromotionalOrderItem(List<Product> products, String productName, int quantity) {
         int remainingQuantity = quantity;
         int totalAmount = 0;
         int usedPromotionStock = 0;
@@ -68,18 +141,29 @@ public class OrderService {
             int availableStock = product.getPromotionStock() + product.getRegularStock();
             if (availableStock > 0) {
                 usedPromotionStock = Math.min(product.getPromotionStock(), remainingQuantity);
-                product.reduceStock(usedPromotionStock, true);
                 remainingQuantity -= usedPromotionStock;
 
                 int usedRegularStock = Math.min(product.getRegularStock(), remainingQuantity);
-                product.reduceStock(usedRegularStock, false);
-                remainingQuantity -= usedRegularStock;
+                if (usedRegularStock > 0 && usedPromotionStock < quantity) {
+                    // 프로모션 재고가 부족한 경우에만 확인
+                    int remainingWithoutPromotion = quantity - usedPromotionStock;
+                    boolean confirm = inputView.confirmPartialPromotion(remainingWithoutPromotion, productName)
+                            .equalsIgnoreCase("Y");
+                    if (!confirm) {
+                        return null;
+                    }
+                }
 
-                totalAmount += product.getPrice() * quantity;
+                product.reduceStock(usedPromotionStock, true);
+                product.reduceStock(usedRegularStock, false);
+                totalAmount += product.getPrice() * (usedPromotionStock + usedRegularStock);
+                remainingQuantity -= usedRegularStock;
             }
         }
+
         if (remainingQuantity > 0) {
-            throw new IllegalArgumentException(MessageConstants.ERROR + MessageConstants.QUANTITY_OVER_STOCK_EXCEPTION);
+            throw new IllegalArgumentException(MessageConstants.ERROR +
+                    MessageConstants.QUANTITY_OVER_STOCK_EXCEPTION);
         }
 
         return new OrderItem(productName, quantity, totalAmount, usedPromotionStock);
@@ -135,15 +219,23 @@ public class OrderService {
         return discount;
     }
 
-    private int calculateMembershipDiscount(int amountAfterPromotion, boolean isMember) {
+    private int calculateMembershipDiscount(List<OrderItem> orderItems , boolean isMember) {
         if (!isMember) {
             return 0;
         }
-        int discount = (amountAfterPromotion * 25) / 100;
-        return Math.min(discount, 8000);
+        int discount = 0;
+        for (OrderItem item : orderItems) {
+            Product product = inventoryService.getProduct(item.getProductName());
+            if (!product.getPromotion().isPresent()) {
+                discount += (item.getAmount() * 30) / 100;
+            }
+        }
+        return discount;
     }
 
     public Receipt getReceipt() {
         return receipt;
     }
+
+
 }

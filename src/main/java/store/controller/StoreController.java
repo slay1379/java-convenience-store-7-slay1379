@@ -6,6 +6,7 @@ import store.domain.Promotion;
 import store.exception.MessageConstants;
 import store.service.InventoryService;
 import store.service.OrderService;
+import store.service.OrderService.OrderValidationResult;
 import store.service.PromotionService;
 import store.view.InputView;
 import store.view.OutputView;
@@ -42,9 +43,16 @@ public class StoreController {
     private void processSingleOrder() {
         String orderInput = inputView.readProduct();
         try {
-            boolean isMember = askMembershipDiscount();
-            orderService.processOrder(orderInput, isMember);
-            outputView.printReceipt(orderService.getReceipt());
+            // 주문 유효성 검사 및 프로모션 재고 확인
+            OrderValidationResult validationResult = orderService.validateOrder(orderInput);
+
+            if (validationResult.isValid()) {
+                // 멤버십 할인 확인
+                boolean isMember = askMembershipDiscount();
+                // 최종 주문 처리
+                orderService.processOrder(orderInput, isMember, validationResult);
+                outputView.printReceipt(orderService.getReceipt());
+            }
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
         }

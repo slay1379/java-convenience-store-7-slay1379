@@ -22,14 +22,18 @@ public class OutputView {
 
         for (List<Product> productList : productsByName.values()) {
             Product product = productList.get(0);
+            boolean hasPromotion = product.getPromotion().isPresent();
+            boolean hasPrintedPromotion = false;
             if (product.getPromotionStock() > 0) {
                 printProductWithPromotion(product);
-                if (product.getRegularStock() == 0) {
-                    printNoRegularStock(product);
-                }
+                hasPrintedPromotion = true;
+            } else if (hasPromotion) {
+                printNoPromotionStockWithPromotion(product);
             }
             if (product.getRegularStock() > 0) {
                 printProductWithRegularStock(product);
+            } else if (hasPrintedPromotion) {
+                printNoRegularStockWithPromotion(product);
             }
         }
     }
@@ -49,10 +53,18 @@ public class OutputView {
                 "- " + product.getName() + " " + priceWithComma + "원 " + stockInfo);
     }
 
-    private void printNoRegularStock(Product product) {
+    private void printNoPromotionStockWithPromotion(Product product) {
         String priceWithComma = String.format("%,d", product.getPrice());
+        String promotionInfo = getPromotionInfo(product);
         System.out.println(
-                "- " + product.getName() + " " + priceWithComma + "원 재고 없음");
+                "- " + product.getName() + " " + priceWithComma + "원 재고 없음" + promotionInfo);
+    }
+
+    private void printNoRegularStockWithPromotion(Product product) {
+        String priceWithComma = String.format("%,d", product.getPrice());
+        String promotionInfo = getPromotionInfo(product);
+        System.out.println(
+                "- " + product.getName() + " " + priceWithComma + "원 재고 없음" + promotionInfo);
     }
 
     private String getPromotionInfo(Product product) {
