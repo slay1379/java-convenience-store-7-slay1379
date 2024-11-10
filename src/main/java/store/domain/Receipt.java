@@ -5,6 +5,7 @@ import java.util.List;
 public class Receipt {
     public List<OrderItem> orderItems;
     public List<GiftItem> giftItems;
+    public int totalQuantity;
     public int totalAmount;
     public int promotionDiscount;
     public int membershipDiscount;
@@ -30,6 +31,14 @@ public class Receipt {
 
     public int getTotalAmount() {
         return totalAmount;
+    }
+
+    public int getTotalQuantity() {
+        totalQuantity = 0;
+        for (OrderItem item : orderItems) {
+            totalQuantity += item.getQuantity();
+        }
+        return totalQuantity;
     }
 
     public int getPromotionDiscount() {

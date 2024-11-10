@@ -82,40 +82,39 @@ public class OutputView {
     }
 
     public void printReceipt(Receipt receipt) {
-        System.out.println("=========== 영수증 ===========");
+        System.out.println("==============W 편의점================");
         printOrderItems(receipt.getOrderItems());
+        System.out.println("=============증   정===============");
         printGiftItems(receipt.getGiftItems());
+        System.out.println("====================================");
         printTotals(receipt);
     }
 
     private void printOrderItems(List<OrderItem> items) {
-        System.out.println("상품명\t수량\t금액");
+        System.out.println("상품명\t\t수량\t금액");
         for (OrderItem item : items) {
-            String amountWithComma = String.format("%,d", item.getAmount());
-            System.out.println(item.getProductName() + "\t" + item.getQuantity() + "\t" + amountWithComma);
+            System.out.printf("%-10s\t%5d\t%,10d%n", item.getProductName(), item.getQuantity(), item.getAmount());
         }
     }
 
     private void printGiftItems(List<GiftItem> gifts) {
-        if (gifts.isEmpty()) {
-            return;
-        }
-        System.out.println("\n증정상품\t수량");
         for (GiftItem gift : gifts) {
-            System.out.println(gift.getProductName() + "\t" + gift.getQuantity());
+            System.out.printf("%-10s\t%5d%n", gift.getProductName(), gift.getQuantity());
         }
     }
 
     private void printTotals(Receipt receipt) {
-        System.out.println("----------------------------");
-        System.out.println("총 구매액:\t" + receipt.getTotalAmount() + "원");
+        System.out.printf("총구매액\t\t%5d\t%,10d%n", receipt.getTotalQuantity(), receipt.getTotalAmount());
         if (receipt.getPromotionDiscount() > 0) {
-            System.out.println("프로모션 할인:\t-%" + receipt.getPromotionDiscount() + "원");
+            System.out.printf("행사할인\t\t\t-%,10d%n", receipt.getPromotionDiscount());
+        } else {
+            System.out.printf("행사할인\t\t\t%10d%n", 0);
         }
         if (receipt.getMembershipDiscount() > 0) {
-            System.out.println("멤버십 할인:\t-" + receipt.getMembershipDiscount() + "원");
+            System.out.printf("멤버십할인\t\t\t-%,10d%n", receipt.getMembershipDiscount());
+        } else {
+            System.out.printf("멤버십할인\t\t\t%10d%n", 0);
         }
-        System.out.println("----------------------------");
-        System.out.println("내실돈:\t\t" + receipt.getFinalAmount() + "원");
+        System.out.printf("내실돈\t\t\t%,10d%n", receipt.getFinalAmount());
     }
 }

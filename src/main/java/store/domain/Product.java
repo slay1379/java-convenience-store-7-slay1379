@@ -40,7 +40,9 @@ public class Product {
     }
 
     public String getIdentifier() {
-        return name + (promotion.map(p -> "_" + p.getName()).orElse(""));
+        // 프로모션이 있는 경우 상품명_프로모션명
+        return promotion.map(p -> name + "_" + p.getName())
+                .orElse(name);  // 프로모션이 없는 경우 상품명만
     }
 
     @Override
