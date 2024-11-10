@@ -14,7 +14,7 @@ public class InputView {
 
     public String readProduct() {
         while (true) {
-            System.out.println(INPUT_PRODUCT_NAME_QUANTITY_MESSAGE);
+            System.out.println("\n"+INPUT_PRODUCT_NAME_QUANTITY_MESSAGE);
             String input = Console.readLine();
             try {
                 parseInputProduct(input);
@@ -26,12 +26,12 @@ public class InputView {
     }
 
     public String readMembershipDiscount() {
-        System.out.println(INPUT_MEMBERSHIP_DISCOUNT);
+        System.out.println("\n"+INPUT_MEMBERSHIP_DISCOUNT);
         return readYOrN();
     }
 
     public String readPurchaseOtherProduct() {
-        System.out.println(INPUT_PURCHASE_OTHER_PRODUCT);
+        System.out.println("\n"+INPUT_PURCHASE_OTHER_PRODUCT);
         return readYOrN();
     }
 
@@ -42,7 +42,7 @@ public class InputView {
                 validateYOrN(input);
                 return input;
             } catch (IllegalArgumentException e) {
-                System.out.println(MessageConstants.ERROR + e.getMessage());
+                System.out.println(e.getMessage());
             }
         }
     }
@@ -65,7 +65,7 @@ public class InputView {
         String content = product.substring(1, product.length() - 1);
         String[] details = content.split("-");
         if (details.length != 2 || details[0].isEmpty() || details[1].isEmpty()) {
-            throw new IllegalArgumentException(MessageConstants.ERROR + MessageConstants.PATTERN_EXCEPTION);
+            throw new IllegalArgumentException(MessageConstants.PATTERN_EXCEPTION);
         }
         return details;
     }
@@ -74,22 +74,20 @@ public class InputView {
         Pattern pattern = Pattern.compile(PRODUCT_QUANTITY_PATTERN);
         Matcher matcher = pattern.matcher(input);
         if (!matcher.matches()) {
-            throw new IllegalArgumentException(MessageConstants.ERROR + MessageConstants.PATTERN_EXCEPTION);
+            throw new IllegalArgumentException(MessageConstants.PATTERN_EXCEPTION);
         }
     }
 
     private void validateProductName(String name) {
         if (name == null || name.isEmpty()) {
-            throw new IllegalArgumentException(
-                    MessageConstants.ERROR + MessageConstants.INPUT_PRODUCT_NAME_EMPTY_EXCEPTION);
+            throw new IllegalArgumentException(MessageConstants.INPUT_PRODUCT_NAME_EMPTY_EXCEPTION);
         }
     }
 
     private void validateProductQuantity(String quantityStr) {
         int quantity = parseQuantity(quantityStr);
         if (quantity <= 0) {
-            throw new IllegalArgumentException(
-                    MessageConstants.ERROR + MessageConstants.INPUT_PRODUCT_QUANTITY_BELOW_ZERO_EXCEPTION);
+            throw new IllegalArgumentException(MessageConstants.INPUT_PRODUCT_QUANTITY_BELOW_ZERO_EXCEPTION);
         }
     }
 
@@ -97,14 +95,14 @@ public class InputView {
         try {
             return Integer.parseInt(quantityStr);
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException(
-                    MessageConstants.ERROR + MessageConstants.INPUT_PRODUCT_QUANTITY_NOT_NUMBER_EXCEPTION);
+            throw new IllegalArgumentException(MessageConstants.INPUT_PRODUCT_QUANTITY_NOT_NUMBER_EXCEPTION);
         }
     }
 
     private void validateYOrN(String input) {
         if (!input.equalsIgnoreCase("Y") && !input.equalsIgnoreCase("N")) {
-            throw new IllegalArgumentException(MessageConstants.ERROR + MessageConstants.PATTERN_EXCEPTION);
+            System.out.println("오류");
+            throw new IllegalArgumentException(MessageConstants.PATTERN_EXCEPTION);
         }
     }
 }

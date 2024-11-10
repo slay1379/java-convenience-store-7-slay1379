@@ -46,7 +46,7 @@ public class StoreController {
             orderService.processOrder(orderInput, isMember);
             outputView.printReceipt(orderService.getReceipt());
         } catch (IllegalArgumentException e) {
-            System.out.println(MessageConstants.ERROR + e.getMessage());
+            System.out.println(e.getMessage());
         }
     }
 
