@@ -83,42 +83,52 @@ public class OrderService {
     }
 
     private void validateSingleOrder(String order) {
+        validateOrderFormat(order);
+        String[] details = extractOrderDetails(order);
+        validateProductExistence(details[0]);
+        validateQuantity(details[2], details[0]);
+    }
+
+    private void validateOrderFormat(String order) {
         if (!order.startsWith("[") || !order.endsWith("]")) {
             throw new IllegalArgumentException(MessageConstants.ERROR +
                     MessageConstants.PATTERN_EXCEPTION);
         }
+    }
 
-        String[] details = extractOrderDetails(order);
-        String productName = details[0];
-
-        // 상품 존재 여부 확인
+    private void validateProductExistence(String productName) {
         List<Product> products = inventoryService.getProductsByName(productName);
         if (products == null || products.isEmpty()) {
             throw new IllegalArgumentException(MessageConstants.ERROR +
                     MessageConstants.NOT_EXIST_PRODUCT_EXCEPTION + MessageConstants.RE_INPUT);
         }
+    }
 
-        // 수량 형식 확인
+    private void validateQuantity(String quantityStr, String productName) {
         try {
-            int quantity = Integer.parseInt(details[2]);
+            int quantity = Integer.parseInt(quantityStr);
             if (quantity <= 0) {
                 throw new IllegalArgumentException(MessageConstants.ERROR +
                         MessageConstants.PATTERN_EXCEPTION + MessageConstants.RE_INPUT);
             }
-
-            // 재고 수량 확인
-            int totalAvailableStock = products.stream()
-                    .mapToInt(p -> p.getRegularStock() + p.getPromotionStock())
-                    .sum();
-            if (quantity > totalAvailableStock) {
-                throw new IllegalArgumentException(MessageConstants.ERROR +
-                        MessageConstants.QUANTITY_OVER_STOCK_EXCEPTION);
-            }
+            validateStockAvailability(productName, quantity);
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException(MessageConstants.ERROR +
                     MessageConstants.PATTERN_EXCEPTION);
         }
     }
+
+    private void validateStockAvailability(String productName, int quantity) {
+        List<Product> products = inventoryService.getProductsByName(productName);
+        int totalAvailableStock = products.stream()
+                .mapToInt(p -> p.getRegularStock() + p.getPromotionStock())
+                .sum();
+        if (quantity > totalAvailableStock) {
+            throw new IllegalArgumentException(MessageConstants.ERROR +
+                    MessageConstants.QUANTITY_OVER_STOCK_EXCEPTION);
+        }
+    }
+
 
     public void processOrder(String orderInput, boolean isMember, OrderValidationResult validationResult) {
         List<OrderItem> orderItems = validationResult.getOrderItems();
