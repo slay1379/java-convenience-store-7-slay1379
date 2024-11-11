@@ -49,30 +49,37 @@ public class OrderService {
     }
 
     public OrderValidationResult validateOrder(String orderInput) {
+        validateOrderInput(orderInput);
+        String[] orders = parseOrders(orderInput);
+        validateOrders(orders);
+        List<OrderItem> orderItems = createValidOrderItems(orders);
+        return new OrderValidationResult(true, orderItems, orderInput);
+    }
+
+    private void validateOrderInput(String orderInput) {
         if (orderInput == null || orderInput.trim().isEmpty()) {
             throw new IllegalArgumentException(MessageConstants.ERROR +
                     MessageConstants.PATTERN_EXCEPTION + MessageConstants.RE_INPUT);
         }
-        try {
-            String[] orders = orderInput.trim().split(",");
-            for (String order : orders) {
-                validateSingleOrder(order);
-            }
+    }
 
-            List<OrderItem> orderItems = createOrderItems(orders);
-            if (orderItems == null || orderItems.isEmpty()) {
-                throw new IllegalArgumentException(MessageConstants.ERROR +
-                        MessageConstants.PATTERN_EXCEPTION + MessageConstants.RE_INPUT);
-            }
+    private String[] parseOrders(String orderInput) {
+        return orderInput.trim().split(",");
+    }
 
-            return new OrderValidationResult(true, orderItems, orderInput);
+    private void validateOrders(String[] orders) {
+        for (String order : orders) {
+            validateSingleOrder(order);
+        }
+    }
 
-        } catch (IllegalArgumentException e) {
-            throw e;
-        } catch (Exception e) {
+    private List<OrderItem> createValidOrderItems(String[] orders) {
+        List<OrderItem> orderItems = createOrderItems(orders);
+        if (orderItems == null || orderItems.isEmpty()) {
             throw new IllegalArgumentException(MessageConstants.ERROR +
                     MessageConstants.PATTERN_EXCEPTION + MessageConstants.RE_INPUT);
         }
+        return orderItems;
     }
 
     private void validateSingleOrder(String order) {
