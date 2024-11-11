@@ -177,15 +177,22 @@ public class OrderService {
     }
 
     private OrderItem createNonPromotionalOrderItem(List<Product> products, String productName, int quantity) {
+        validateStockAvailability(products, quantity);
+        int totalAmount = calculateTotalAmountAndReduceStock(products, quantity);
+        return new OrderItem(productName, quantity, totalAmount, 0);
+    }
+
+    private void validateStockAvailability(List<Product> products, int quantity) {
         int totalStock = products.stream()
                 .mapToInt(Product::getRegularStock)
                 .sum();
-
         if (quantity > totalStock) {
             throw new IllegalArgumentException(MessageConstants.ERROR +
                     MessageConstants.QUANTITY_OVER_STOCK_EXCEPTION);
         }
+    }
 
+    private int calculateTotalAmountAndReduceStock(List<Product> products, int quantity) {
         int remainingQuantity = quantity;
         int totalAmount = 0;
 
@@ -200,7 +207,7 @@ public class OrderService {
             totalAmount += product.getPrice() * usedStock;
         }
 
-        return new OrderItem(productName, quantity, totalAmount, 0);
+        return totalAmount;
     }
 
     private OrderItem createPromotionalOrderItem(List<Product> products, String productName, int quantity) {
