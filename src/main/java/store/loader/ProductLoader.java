@@ -11,7 +11,7 @@ public class ProductLoader {
     private static final String PRODUCTS_FILE_PATH = "src/main/resources/products.md";
 
     public List<Product> readProducts(List<Promotion> promotions) {
-        return loadProducts(promotions,PRODUCTS_FILE_PATH);
+        return loadProducts(promotions, PRODUCTS_FILE_PATH);
     }
 
     public List<Product> loadProducts(List<Promotion> promotions, String filePath) {
@@ -30,14 +30,17 @@ public class ProductLoader {
         String name = splitLine[0].trim();
         int price = Integer.parseInt(splitLine[1].trim());
         int stock = Integer.parseInt(splitLine[2].trim());
-        String promotionName = splitLine[3].trim().equals("null") ? null : splitLine[3].trim();
-        Promotion promotion = promotionName == null ? null : findPromotionByName(promotions, promotionName);
+        String promotionName = splitLine[3].trim();
+        Promotion promotion = null;
+        if (!"null".equals(promotionName)) {
+            promotion = findPromotionByName(promotions, promotionName);
+        }
         Product existingProduct = findProductByName(products, name);
         if (existingProduct != null) {
             addStock(existingProduct, stock, promotion);
-        } else {
-            createNewProduct(products, name, price, stock, promotion);
+            return;
         }
+        createNewProduct(products, name, price, stock, promotion);
     }
 
     private void addStock(Product product, int stock, Promotion promotion) {
