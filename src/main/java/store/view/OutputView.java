@@ -27,16 +27,14 @@ public class OutputView {
         boolean hasPromotion = product.getPromotion().isPresent();
         if (product.getPromotionStock() > 0) {
             printProductWithPromotion(product);
-            return;
-        }
-        if (hasPromotion) {
+        } else if (hasPromotion) {
             printNoPromotionStockWithPromotion(product);
         }
         if (product.getRegularStock() > 0) {
             printProductWithRegularStock(product);
-            return;
+        } else {
+            printNoRegularStock(product);
         }
-        printNoRegularStock(product);
     }
 
 
@@ -73,7 +71,7 @@ public class OutputView {
     }
 
     public void printReceipt(Receipt receipt) {
-        System.out.println("==============W 편의점================");
+        System.out.println("\n==============W 편의점================");
         printOrderItems(receipt.getOrderItems());
         System.out.println("=============증   정===============");
         printGiftItems(receipt.getGiftItems());
