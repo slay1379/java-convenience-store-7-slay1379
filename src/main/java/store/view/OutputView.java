@@ -27,14 +27,16 @@ public class OutputView {
         boolean hasPromotion = product.getPromotion().isPresent();
         if (product.getPromotionStock() > 0) {
             printProductWithPromotion(product);
-        } else if (hasPromotion) {
+            return;
+        }
+        if (hasPromotion) {
             printNoPromotionStockWithPromotion(product);
         }
         if (product.getRegularStock() > 0) {
             printProductWithRegularStock(product);
-        } else {
-            printNoRegularStock(product);
+            return;
         }
+        printNoRegularStock(product);
     }
 
 
