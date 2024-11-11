@@ -1,11 +1,13 @@
 package store.service;
 
+import camp.nextstep.edu.missionutils.DateTimes;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.jupiter.api.Order;
 import store.domain.GiftItem;
 import store.domain.OrderItem;
 import store.domain.Product;
+import store.domain.Promotion;
 import store.domain.Receipt;
 import store.exception.MessageConstants;
 import store.view.InputView;
@@ -25,10 +27,12 @@ public class OrderService {
     public static class OrderValidationResult {
         private final boolean isValid;
         private final List<OrderItem> orderItems;
+        private final String orderInput;
 
-        public OrderValidationResult(boolean isValid, List<OrderItem> orderItems) {
+        public OrderValidationResult(boolean isValid, List<OrderItem> orderItems, String orderInput) {
             this.isValid = isValid;
             this.orderItems = orderItems;
+            this.orderInput = orderInput;
         }
 
         public boolean isValid() {
@@ -38,22 +42,77 @@ public class OrderService {
         public List<OrderItem> getOrderItems() {
             return orderItems;
         }
+
+        public String getOrderInput() {
+            return orderInput;
+        }
     }
 
     public OrderValidationResult validateOrder(String orderInput) {
-        if (orderInput.isEmpty()) {
-            System.out.println("구매한 상품이 없습니다.");
-            return new OrderValidationResult(false, null);
+        if (orderInput == null || orderInput.trim().isEmpty()) {
+            throw new IllegalArgumentException(MessageConstants.ERROR +
+                    MessageConstants.PATTERN_EXCEPTION + MessageConstants.RE_INPUT);
         }
 
-        List<OrderItem> orderItems = createOrderItems(orderInput.split(","));
-        if (orderItems == null) {
-            return new OrderValidationResult(false, null);
-        }
+        try {
+            String[] orders = orderInput.trim().split(",");
+            for (String order : orders) {
+                validateSingleOrder(order);
+            }
 
-        return new OrderValidationResult(true, orderItems);
+            List<OrderItem> orderItems = createOrderItems(orders);
+            if (orderItems == null || orderItems.isEmpty()) {
+                throw new IllegalArgumentException(MessageConstants.ERROR +
+                        MessageConstants.PATTERN_EXCEPTION + MessageConstants.RE_INPUT);
+            }
+
+            return new OrderValidationResult(true, orderItems, orderInput);
+
+        } catch (IllegalArgumentException e) {
+            throw e; // 이미 적절한 에러 메시지를 포함하고 있으므로 그대로 전파
+        } catch (Exception e) {
+            throw new IllegalArgumentException(MessageConstants.ERROR +
+                    MessageConstants.PATTERN_EXCEPTION + MessageConstants.RE_INPUT);
+        }
     }
 
+    private void validateSingleOrder(String order) {
+        if (!order.startsWith("[") || !order.endsWith("]")) {
+            throw new IllegalArgumentException(MessageConstants.ERROR +
+                    MessageConstants.PATTERN_EXCEPTION);
+        }
+
+        String[] details = extractOrderDetails(order);
+        String productName = details[0];
+
+        // 상품 존재 여부 확인
+        List<Product> products = inventoryService.getProductsByName(productName);
+        if (products == null || products.isEmpty()) {
+            throw new IllegalArgumentException(MessageConstants.ERROR +
+                    MessageConstants.NOT_EXIST_PRODUCT_EXCEPTION + MessageConstants.RE_INPUT);
+        }
+
+        // 수량 형식 확인
+        try {
+            int quantity = Integer.parseInt(details[2]);
+            if (quantity <= 0) {
+                throw new IllegalArgumentException(MessageConstants.ERROR +
+                        MessageConstants.PATTERN_EXCEPTION + MessageConstants.RE_INPUT);
+            }
+
+            // 재고 수량 확인
+            int totalAvailableStock = products.stream()
+                    .mapToInt(p -> p.getRegularStock() + p.getPromotionStock())
+                    .sum();
+            if (quantity > totalAvailableStock) {
+                throw new IllegalArgumentException(MessageConstants.ERROR +
+                        MessageConstants.QUANTITY_OVER_STOCK_EXCEPTION);
+            }
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(MessageConstants.ERROR +
+                    MessageConstants.PATTERN_EXCEPTION);
+        }
+    }
 
     public void processOrder(String orderInput, boolean isMember, OrderValidationResult validationResult) {
         List<OrderItem> orderItems = validationResult.getOrderItems();
@@ -89,7 +148,7 @@ public class OrderService {
         List<Product> products = inventoryService.getProductsByName(productName);
 
         // 프로모션이 없는 상품인 경우 바로 일반 재고에서 처리
-        if (!hasPromotion(products)) {
+        if (!hasPromotion(products) || !hasValidPromotion(products)) {
             return createNonPromotionalOrderItem(products, productName, quantity);
         }
 
@@ -169,9 +228,11 @@ public class OrderService {
                 // 일반 재고로 처리해야 할 수량이 있는 경우
                 int usedRegularStock = Math.min(product.getRegularStock(), remainingQuantity);
                 int remainingWithoutPromotion = quantity - usedPromotionStock;
-                if (quantity > product.getPromotionStock() / (product.getPromotion().get().getBuy() + product.getPromotion().get()
-                        .getGet()) * (product.getPromotion().get().getBuy() + product.getPromotion().get()
-                        .getGet())) {
+                if (quantity >
+                        product.getPromotionStock() / (product.getPromotion().get().getBuy() + product.getPromotion()
+                                .get()
+                                .getGet()) * (product.getPromotion().get().getBuy() + product.getPromotion().get()
+                                .getGet())) {
                     int exceptionPromotion = remainingWithoutPromotion + product.getPromotionStock() % (
                             product.getPromotion().get().getBuy()
                                     + product.getPromotion().get().getGet());
@@ -202,15 +263,21 @@ public class OrderService {
     }
 
     private String[] extractOrderDetails(String order) {
-        String content = order.substring(1, order.length() - 1);
-        String[] details = content.split("-");
-        if (details.length == 2) {
-            return new String[]{details[0], "null", details[1]};
+        try {
+            String content = order.substring(1, order.length() - 1);
+            String[] details = content.split("-");
+            if (details.length == 2) {
+                return new String[]{details[0], "null", details[1]};
+            }
+            if (details.length == 3) {
+                return details;
+            }
+            throw new IllegalArgumentException(MessageConstants.ERROR +
+                    MessageConstants.PATTERN_EXCEPTION);
+        } catch (IndexOutOfBoundsException e) {
+            throw new IllegalArgumentException(MessageConstants.ERROR +
+                    MessageConstants.PATTERN_EXCEPTION);
         }
-        if (details.length == 3) {
-            return details;
-        }
-        throw new IllegalArgumentException(MessageConstants.ERROR + MessageConstants.PATTERN_EXCEPTION);
     }
 
     private List<GiftItem> createGiftItems(List<OrderItem> orderItems) {
@@ -251,7 +318,7 @@ public class OrderService {
         return discount;
     }
 
-    private int calculateMembershipDiscount(List<OrderItem> orderItems , boolean isMember) {
+    private int calculateMembershipDiscount(List<OrderItem> orderItems, boolean isMember) {
         if (!isMember) {
             return 0;
         }
@@ -263,6 +330,22 @@ public class OrderService {
             }
         }
         return discount;
+    }
+
+    private boolean hasValidPromotion(List<Product> products) {
+        return products.stream()
+                .anyMatch(product ->
+                        product.getPromotion().isPresent() &&
+                                isPromotionValid(product.getPromotion().get()));
+    }
+
+    private boolean isPromotionValid(Promotion promotion) {
+        LocalDate now = DateTimes.now().toLocalDate();
+        System.out.println("Current Date:" + now);
+        System.out.println(
+                "Promotion Start Date:" + promotion.getStartDate() + "Promotion End Date:" + promotion.getEndDate());
+        return !now.isBefore(promotion.getStartDate()) &&
+                !now.isAfter(promotion.getEndDate());
     }
 
     public Receipt getReceipt() {
