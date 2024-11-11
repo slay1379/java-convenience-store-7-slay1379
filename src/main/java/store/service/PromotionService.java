@@ -13,11 +13,7 @@ public class PromotionService {
     }
 
     public boolean isPromotionApplicable(Product product) {
-        if (!product.getPromotion().isPresent()) {
-            return false;
-        }
-        Promotion promotion = product.getPromotion().get();
-        return isPromotionActive(promotion);
+        return product.getPromotion().isPresent() && isPromotionActive(product.getPromotion().get());
     }
 
     private boolean isPromotionActive(Promotion promotion) {
@@ -30,26 +26,21 @@ public class PromotionService {
             return 0;
         }
         Promotion promotion = product.getPromotion().get();
-        if (quantity >= promotion.getBuy()) {
-            return (quantity / (promotion.getBuy() + promotion.getGet())) * promotion.getGet();
-        }
-        return 0;
+        return calculateEligibleGetQuantity(promotion, quantity);
+    }
+
+    private int calculateEligibleGetQuantity(Promotion promotion, int quantity) {
+        return (quantity >= promotion.getBuy())
+                ? (quantity / (promotion.getBuy() + promotion.getGet())) * promotion.getGet()
+                : 0;
     }
 
     public int calculateAdditionalFreeQuantity(Product product, int currentQuantity) {
         if (!product.getPromotion().isPresent()) {
             return 0;
         }
-
-        return product.getPromotion()
-                .map(promotion -> {
-                    int buyQuantity = promotion.getBuy();
-                    int finalCurrentQuantity = currentQuantity % (promotion.getBuy() + promotion.getGet());
-                    if (buyQuantity == finalCurrentQuantity) {
-                        return product.getPromotion().get().getGet();
-                    }
-                    return 0;
-                })
-                .orElse(0);
+        Promotion promotion = product.getPromotion().get();
+        int finalCurrentQuantity = currentQuantity % (promotion.getBuy() + promotion.getGet());
+        return (promotion.getBuy() == finalCurrentQuantity) ? promotion.getGet() : 0;
     }
 }
