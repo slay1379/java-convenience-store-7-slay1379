@@ -13,44 +13,47 @@ public class ProductLoader {
     public List<Product> readProducts(List<Promotion> promotions) {
         return loadProducts(promotions,PRODUCTS_FILE_PATH);
     }
+
     public List<Product> loadProducts(List<Promotion> promotions, String filePath) {
         List<Product> products = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
-            String line;
             br.readLine();
-            while ((line = br.readLine()) != null) {
-                String[] splitLine = line.split(",");
-                String name = splitLine[0].trim();
-                int price = Integer.parseInt(splitLine[1].trim());
-                int stock = Integer.parseInt(splitLine[2].trim());
-                String promotionName = splitLine[3].trim().equals("null") ? null : splitLine[3].trim();
-                Promotion promotion = null;
-                if (promotionName != null) {
-                    promotion = findPromotionByName(promotions, promotionName);
-                }
-
-                Product existingProduct = findProductByName(products, name);
-                if (existingProduct != null) {
-                    if (promotion == null) {
-                        existingProduct.addRegularStock(stock);
-                    } else {
-                        existingProduct.addPromotionStock(stock, promotion);
-                    }
-                } else {
-                    Product product = new Product(name, price);
-                    if (promotion == null) {
-                        product.addRegularStock(stock);
-                    } else {
-                        product.addPromotionStock(stock, promotion);
-                    }
-                    products.add(product);
-                }
-            }
+            br.lines().forEach(line -> processLine(line, promotions, products));
         } catch (Exception e) {
             e.printStackTrace();
         }
         return products;
     }
+
+    private void processLine(String line, List<Promotion> promotions, List<Product> products) {
+        String[] splitLine = line.split(",");
+        String name = splitLine[0].trim();
+        int price = Integer.parseInt(splitLine[1].trim());
+        int stock = Integer.parseInt(splitLine[2].trim());
+        String promotionName = splitLine[3].trim().equals("null") ? null : splitLine[3].trim();
+        Promotion promotion = promotionName == null ? null : findPromotionByName(promotions, promotionName);
+        Product existingProduct = findProductByName(products, name);
+        if (existingProduct != null) {
+            addStock(existingProduct, stock, promotion);
+        } else {
+            createNewProduct(products, name, price, stock, promotion);
+        }
+    }
+
+    private void addStock(Product product, int stock, Promotion promotion) {
+        if (promotion == null) {
+            product.addRegularStock(stock);
+        } else {
+            product.addPromotionStock(stock, promotion);
+        }
+    }
+
+    private void createNewProduct(List<Product> products, String name, int price, int stock, Promotion promotion) {
+        Product product = new Product(name, price);
+        addStock(product, stock, promotion);
+        products.add(product);
+    }
+
 
     private Product findProductByName(List<Product> products, String name) {
         for (Product product : products) {

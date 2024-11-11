@@ -23,20 +23,10 @@ public class InventoryService {
 
     public List<Product> getProductsByName(String name) {
         List<Product> products = new ArrayList<>();
-        for (Product product : inventory.values()) {
-            if (product.getName().equals(name)) {
-                products.add(product);
-            }
-        }
-
-        products.sort((p1, p2) -> {
-            if (p1.getPromotion().isPresent() && !p2.getPromotion().isPresent()) {
-                return -1;
-            } else if (!p1.getPromotion().isPresent() && p2.getPromotion().isPresent()) {
-                return 1;
-            }
-            return 0;
-        });
+        inventory.values().stream()
+                .filter(product -> product.getName().equals(name))
+                .forEach(products::add);
+        products.sort((p1, p2) -> Boolean.compare(p2.getPromotion().isPresent(), p1.getPromotion().isPresent()));
         return products;
     }
 

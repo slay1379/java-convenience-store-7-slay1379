@@ -53,7 +53,6 @@ public class OrderService {
             throw new IllegalArgumentException(MessageConstants.ERROR +
                     MessageConstants.PATTERN_EXCEPTION + MessageConstants.RE_INPUT);
         }
-
         try {
             String[] orders = orderInput.trim().split(",");
             for (String order : orders) {
@@ -69,7 +68,7 @@ public class OrderService {
             return new OrderValidationResult(true, orderItems, orderInput);
 
         } catch (IllegalArgumentException e) {
-            throw e; // 이미 적절한 에러 메시지를 포함하고 있으므로 그대로 전파
+            throw e;
         } catch (Exception e) {
             throw new IllegalArgumentException(MessageConstants.ERROR +
                     MessageConstants.PATTERN_EXCEPTION + MessageConstants.RE_INPUT);
