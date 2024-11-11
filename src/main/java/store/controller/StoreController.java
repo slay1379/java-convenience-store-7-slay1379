@@ -23,7 +23,7 @@ public class StoreController {
         this.promotionService = new PromotionService(promotions);
         this.inputView = new InputView();
         this.outputView = new OutputView();
-        this.orderService = new OrderService(inventoryService, promotionService,inputView);
+        this.orderService = new OrderService(inventoryService, promotionService, inputView);
     }
 
     public void run() {
@@ -67,15 +67,27 @@ public class StoreController {
 
                 return validationResult;
             } catch (IllegalArgumentException e) {
-                if (e.getMessage().contains(MessageConstants.PATTERN_EXCEPTION)) {
+                String errorMessage = e.getMessage();
+
+                if (errorMessage.contains(MessageConstants.PATTERN_EXCEPTION)) {
                     System.out.println(MessageConstants.ERROR + MessageConstants.PATTERN_EXCEPTION);
-                } else if (e.getMessage().contains(MessageConstants.NOT_EXIST_PRODUCT_EXCEPTION + MessageConstants.RE_INPUT)) {
-                    System.out.println(MessageConstants.ERROR + MessageConstants.NOT_EXIST_PRODUCT_EXCEPTION + MessageConstants.RE_INPUT);
-                } else if (e.getMessage().contains(MessageConstants.QUANTITY_OVER_STOCK_EXCEPTION)) {
-                    System.out.println(MessageConstants.ERROR + MessageConstants.QUANTITY_OVER_STOCK_EXCEPTION + MessageConstants.RE_INPUT);
-                } else {
-                    System.out.println(MessageConstants.ERROR + MessageConstants.PATTERN_EXCEPTION + MessageConstants.RE_INPUT);
+                    continue;
                 }
+
+                if (errorMessage.contains(MessageConstants.NOT_EXIST_PRODUCT_EXCEPTION + MessageConstants.RE_INPUT)) {
+                    System.out.println(MessageConstants.ERROR + MessageConstants.NOT_EXIST_PRODUCT_EXCEPTION
+                            + MessageConstants.RE_INPUT);
+                    continue;
+                }
+
+                if (errorMessage.contains(MessageConstants.QUANTITY_OVER_STOCK_EXCEPTION)) {
+                    System.out.println(MessageConstants.ERROR + MessageConstants.QUANTITY_OVER_STOCK_EXCEPTION
+                            + MessageConstants.RE_INPUT);
+                    continue;
+                }
+
+                System.out.println(
+                        MessageConstants.ERROR + MessageConstants.PATTERN_EXCEPTION + MessageConstants.RE_INPUT);
             }
         }
     }
