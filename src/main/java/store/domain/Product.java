@@ -51,7 +51,9 @@ public class Product {
     public void reduceStock(int quantity, boolean isPromotion) {
         if (isPromotion && promotionStock >= quantity) {
             promotionStock -= quantity;
-        } else if (!isPromotion && regularStock >= quantity) {
+            return;
+        }
+        if (!isPromotion && regularStock >= quantity) {
             regularStock -= quantity;
         }
     }
