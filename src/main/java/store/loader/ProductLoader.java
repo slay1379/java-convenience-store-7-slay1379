@@ -46,9 +46,9 @@ public class ProductLoader {
     private void addStock(Product product, int stock, Promotion promotion) {
         if (promotion == null) {
             product.addRegularStock(stock);
-        } else {
-            product.addPromotionStock(stock, promotion);
+            return;
         }
+        product.addPromotionStock(stock, promotion);
     }
 
     private void createNewProduct(List<Product> products, String name, int price, int stock, Promotion promotion) {
