@@ -46,7 +46,7 @@ public class PromotionService {
                     int buyQuantity = promotion.getBuy();
                     int finalCurrentQuantity = currentQuantity % (promotion.getBuy() + promotion.getGet());
                     if (buyQuantity == finalCurrentQuantity) {
-                        return finalCurrentQuantity;
+                        return product.getPromotion().get().getGet();
                     }
                     return 0;
                 })

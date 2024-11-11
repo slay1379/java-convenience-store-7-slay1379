@@ -155,6 +155,11 @@ public class OrderService {
                 break;
             }
 
+            if (product.getRegularStock() + product.getPromotionStock() < quantity) {
+                throw new IllegalArgumentException(MessageConstants.ERROR +
+                        MessageConstants.QUANTITY_OVER_STOCK_EXCEPTION);
+            }
+
             int availableStock = product.getPromotionStock() + product.getRegularStock();
             if (availableStock > 0) {
                 // 프로모션 재고 사용
@@ -163,17 +168,23 @@ public class OrderService {
 
                 // 일반 재고로 처리해야 할 수량이 있는 경우
                 int usedRegularStock = Math.min(product.getRegularStock(), remainingQuantity);
-                if (usedRegularStock > 0 && usedPromotionStock < quantity) {
-                    // 프로모션 재고가 부족한 경우 확인
-                    int remainingWithoutPromotion = quantity - usedPromotionStock;
-
-                    String response = inputView.confirmPartialPromotion(
-                            remainingWithoutPromotion + product.getPromotionStock() % (
-                                    product.getPromotion().get().getBuy() + product.getPromotion().get().getGet()),
-                            productName);
-
+                int remainingWithoutPromotion = quantity - usedPromotionStock;
+                if (quantity > product.getPromotionStock() / (product.getPromotion().get().getBuy() + product.getPromotion().get()
+                        .getGet()) * (product.getPromotion().get().getBuy() + product.getPromotion().get()
+                        .getGet())) {
+                    int exceptionPromotion = remainingWithoutPromotion + product.getPromotionStock() % (
+                            product.getPromotion().get().getBuy()
+                                    + product.getPromotion().get().getGet());
+                    String response = inputView.confirmPartialPromotion(exceptionPromotion, productName);
                     if (!response.equalsIgnoreCase("Y")) {
-                        return null;
+                        if (exceptionPromotion < usedRegularStock) {
+                            usedRegularStock -= exceptionPromotion;
+                        }
+                        if (exceptionPromotion > usedRegularStock) {
+                            usedPromotionStock -= (exceptionPromotion - usedRegularStock);
+                            usedRegularStock = 0;
+                        }
+                        quantity -= exceptionPromotion;
                     }
                 }
 
@@ -184,11 +195,6 @@ public class OrderService {
                 totalAmount += product.getPrice() * quantity;
                 remainingQuantity -= usedRegularStock;
             }
-        }
-
-        if (remainingQuantity > 0) {
-            throw new IllegalArgumentException(MessageConstants.ERROR +
-                    MessageConstants.QUANTITY_OVER_STOCK_EXCEPTION);
         }
 
         // 전체 수량(원래 수량 + 추가된 수량)을 OrderItem에 반영
