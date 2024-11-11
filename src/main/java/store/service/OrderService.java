@@ -341,9 +341,6 @@ public class OrderService {
 
     private boolean isPromotionValid(Promotion promotion) {
         LocalDate now = DateTimes.now().toLocalDate();
-        System.out.println("Current Date:" + now);
-        System.out.println(
-                "Promotion Start Date:" + promotion.getStartDate() + "Promotion End Date:" + promotion.getEndDate());
         return !now.isBefore(promotion.getStartDate()) &&
                 !now.isAfter(promotion.getEndDate());
     }
