@@ -98,7 +98,7 @@ public class InputView {
     private void validateProductQuantity(String quantityStr) {
         int quantity = parseQuantity(quantityStr);
         if (quantity <= 0) {
-            throw new IllegalArgumentException(MessageConstants.INPUT_PRODUCT_QUANTITY_BELOW_ZERO_EXCEPTION);
+            throw new IllegalArgumentException(MessageConstants.INPUT_PRODUCT_QUANTITY_BELOW_ZERO_EXCEPTION + MessageConstants.RE_INPUT);
         }
     }
 
