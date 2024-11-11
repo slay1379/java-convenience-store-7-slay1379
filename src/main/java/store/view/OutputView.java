@@ -16,27 +16,27 @@ public class OutputView {
     public void printAllProducts(List<Product> products) {
         System.out.println(GREETING_MESSAGE);
 
-        // 이름으로 제품을 그룹화하면서 입력된 순서를 유지합니다.
         Map<String, List<Product>> productsByName = products.stream()
                 .collect(Collectors.groupingBy(Product::getName, LinkedHashMap::new, Collectors.toList()));
 
-        for (List<Product> productList : productsByName.values()) {
-            Product product = productList.get(0);
-            boolean hasPromotion = product.getPromotion().isPresent();
-            boolean hasPrintedPromotion = false;
-            if (product.getPromotionStock() > 0) {
-                printProductWithPromotion(product);
-                hasPrintedPromotion = true;
-            } else if (hasPromotion) {
-                printNoPromotionStockWithPromotion(product);
-            }
-            if (product.getRegularStock() > 0) {
-                printProductWithRegularStock(product);
-            } else {
-                printNoRegularStockWithPromotion(product);
-            }
+        productsByName.values().forEach(this::printProductList);
+    }
+
+    private void printProductList(List<Product> productList) {
+        Product product = productList.get(0);
+        boolean hasPromotion = product.getPromotion().isPresent();
+        if (product.getPromotionStock() > 0) {
+            printProductWithPromotion(product);
+        } else if (hasPromotion) {
+            printNoPromotionStockWithPromotion(product);
+        }
+        if (product.getRegularStock() > 0) {
+            printProductWithRegularStock(product);
+        } else {
+            printNoRegularStock(product);
         }
     }
+
 
     private void printProductWithPromotion(Product product) {
         String stockInfo = product.getPromotionStock() + "개";
@@ -60,9 +60,8 @@ public class OutputView {
                 "- " + product.getName() + " " + priceWithComma + "원 재고 없음" + promotionInfo);
     }
 
-    private void printNoRegularStockWithPromotion(Product product) {
+    private void printNoRegularStock(Product product) {
         String priceWithComma = String.format("%,d", product.getPrice());
-        String promotionInfo = getPromotionInfo(product);
         System.out.println(
                 "- " + product.getName() + " " + priceWithComma + "원 재고 없음");
     }
@@ -98,12 +97,12 @@ public class OutputView {
         if (receipt.getPromotionDiscount() > 0) {
             System.out.printf("행사할인\t\t\t-%,10d%n", receipt.getPromotionDiscount());
         } else {
-            System.out.printf("행사할인\t\t\t%10d%n", 0);
+            System.out.printf("행사할인\t\t\t-%10d%n", 0);
         }
         if (receipt.getMembershipDiscount() > 0) {
             System.out.printf("멤버십할인\t\t\t-%,10d%n", receipt.getMembershipDiscount());
         } else {
-            System.out.printf("멤버십할인\t\t\t%10d%n", 0);
+            System.out.printf("멤버십할인\t\t\t-%10d%n", 0);
         }
         System.out.printf("내실돈\t\t\t%,10d%n", receipt.getFinalAmount());
     }
