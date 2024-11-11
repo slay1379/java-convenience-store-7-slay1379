@@ -33,13 +33,4 @@ public class InventoryService {
     public List<Product> getAllProducts() {
         return new ArrayList<>(inventory.values());
     }
-
-    public void reduceStock(String identifier, int quantity, boolean usePromotionStock) {
-        Product product = getProduct(identifier);
-        if (product == null) {
-            throw new IllegalArgumentException(MessageConstants.ERROR + MessageConstants.NULL_PRODUCT_EXCEPTION);
-        }
-        product.reduceStock(quantity, usePromotionStock);
-    }
-
 }
